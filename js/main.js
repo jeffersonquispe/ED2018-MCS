@@ -11,6 +11,10 @@ var canvas;
 var data1=200;
 var data2=100;
 var count=0;
+var poligonos = [];
+var polCount = 0;
+var puntos = [];
+var puntCount = 0;
 var rect, isDown, origX, origY;//para el rectangulo
 
 $('#k').click(function(){
@@ -112,12 +116,12 @@ $(window).load(function(){
     $('#create-polygon').click(function() {
         polygonMode = true;
         pointMode = false;
-        prototypefabric.polygon.drawPolygon(); 
+        prototypefabric.polygon.drawPolygon();
     });
    $('#create-point').click(function() {
         polygonMode = false;
         pointMode = true;
-        prototypefabric.point.drawPoint(); 
+        prototypefabric.point.drawPoint();
       // alert("crear punto");
     });
    $('#create-rect').click(function() {
@@ -141,6 +145,14 @@ var prototypefabric = new function(){
             alert(pointMode);*/
             if(options.target && options.target.id == pointArray[0].id){
                 prototypefabric.polygon.generatePolygon(pointArray);
+                // -------
+                // enviar el nuevo objeto a añadir
+                poligonos[polCount] = prototypefabric.polygon.polygonPoints;
+                polCount++;
+                // -------
+                prototypefabric.polygon.polygonPoints = [];
+                prototypefabric.polygon.polygonLength = 0;
+                console.log(poligonos)
             }
           if(polygonMode){
                 prototypefabric.polygon.addPoint(options);
@@ -148,6 +160,13 @@ var prototypefabric = new function(){
             }
            if(pointMode){
                 prototypefabric.point.addPoint(options);
+                // -------
+                // enviar el nuevo objeto a añadir
+                puntos[puntCount] = prototypefabric.point.points;
+                puntCount++;
+                // -------
+                prototypefabric.point.points = [];
+                console.log(puntos)
                // alert("hoal desde point");
             }
             if(rectMode){

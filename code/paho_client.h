@@ -1,4 +1,5 @@
 #include "mqtt/async_client.h"
+#include <chrono>
 
 //const std::string SERVER_ADDRESS("tcp://localhost:1883");
 const std::string SERVER_ADDRESS("tcp://r-tree.nezads.com:1883");
@@ -10,9 +11,44 @@ using namespace std::chrono;
 
 const int QOS = 1;
 const int N_RETRY_ATTEMPTS = 5;
-const auto PERIOD = seconds(5);
 const int MAX_BUFFERED_MSGS = 120;
+const auto PERIOD = seconds(5);
 const string PERSIST_DIR { "data-persist" };
+
+
+int mqttPublish(string TOPIC, string payload) {
+	string address = SERVER_ADDRESS;
+
+  // mqtt::async_client cli(address, "", MAX_BUFFERED_MSGS, PERSIST_DIR);
+	mqtt::async_client cli(address, "");
+
+	mqtt::connect_options connOpts;
+	connOpts.set_clean_session(true);
+	connOpts.set_automatic_reconnect(true);
+
+	mqtt::topic top(cli, TOPIC, QOS, true);
+
+	try {
+		cout << "Connecting to server '" << address << "'..." << flush;
+		cli.connect(connOpts)->wait();
+		cout << "OK\n" << endl;
+		
+		char* cstr = new char [payload.size() + 1];
+		std::strcpy(cstr, payload.c_str());
+		cout << payload << endl;
+		top.publish(std::move(cstr));
+
+		cout << "\nDisconnecting..." << flush;
+		cli.disconnect()->wait();
+		cout << "OK" << endl;
+	}
+	catch (const mqtt::exception& exc) {
+		cerr << exc.what() << endl;
+		return 1;
+	}
+
+ 	return 0;
+}
 
 class action_listener : public virtual mqtt::iaction_listener{
   std::string name_;
@@ -67,7 +103,6 @@ class callback : public virtual mqtt::callback, public virtual mqtt::iaction_lis
       << "\tfor client " << CLIENT_ID
       << " using QoS" << QOS << "\n"
       << "\nPress Q<Enter> to quit\n" << std::endl;
-
     cli_.subscribe(TOPIC, QOS, nullptr, subListener_);
   }
 
@@ -85,15 +120,16 @@ class callback : public virtual mqtt::callback, public virtual mqtt::iaction_lis
     std::cout << "Message arrived" << std::endl;
     std::cout << "\ttopic: '" << msg->get_topic() << "'" << std::endl;
     std::cout << "\tpayload: '" << msg->to_string() << "'\n" << std::endl;
+    string payload;
     if(msg->get_topic().compare("web/insert") == 0){
       // llamar a insertar nodo
-      // publicar resultado en cpp/insert
+      mqttPublish("cpp/insert", payload);
     } else if(msg->get_topic().compare("web/knn") == 0){
-      // llamar knn
-      // publicar resultado en cpp/knn
+      // llamar knn y generar el payload
+      mqttPublish("cpp/knn", payload);
     } else if(msg->get_topic().compare("web/search") == 0){
-      // llamar search
-      // publicar resultado en cpp/search
+      // llamar search, generar el payload
+      mqttPublish("cpp/search", payload);
     }
   }
 
@@ -103,3 +139,36 @@ public:
   callback(mqtt::async_client& cli, mqtt::connect_options& connOpts)
         : nretry_(0), cli_(cli), connOpts_(connOpts), subListener_("Subscription") {}
 };
+
+int mqttSubscribe(){
+  mqtt::connect_options connOpts;
+  connOpts.set_keep_alive_interval(20);
+  connOpts.set_clean_session(true);
+
+  mqtt::async_client client(SERVER_ADDRESS, CLIENT_ID);
+
+  callback cb(client, connOpts);
+  client.set_callback(cb);
+
+  try {
+    cout << "Connecting to the MQTT server..." << flush;
+    client.connect(connOpts, nullptr, cb);
+  }
+  catch (const mqtt::exception&) {
+    cerr << "\nERROR: Unable to connect to MQTT server: '" << SERVER_ADDRESS << "'" << endl;
+    return 1;
+  }
+
+  while (tolower(cin.get()) != 'q'){}
+
+  try {
+    cout << "\nDisconnecting from the MQTT server..." << flush;
+    client.disconnect()->wait();
+    cout << "OK" << endl;
+  }
+  catch (const mqtt::exception& exc) {
+    cerr << exc.what() << endl;
+    return 1;
+  }
+  return 0;
+}

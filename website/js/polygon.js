@@ -108,6 +108,7 @@ prototypefabric.polygon = {
             strokeWidth:0.5,
             fill: 'red',
             opacity: 1,
+            evented: false,
             hasBorders: false,
             hasControls: false
         });

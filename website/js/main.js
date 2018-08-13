@@ -60,8 +60,8 @@ $('#k').click(function(){
       id: Iden
     });
     canvas.add(group);
-   
 });*/
+
 $('#create-rect2').click(function(){
     canvas.on('mouse:down', function(o){
     isDown = true;
@@ -77,6 +77,7 @@ $('#create-rect2').click(function(){
         width: pointer.x-origX,
         height: pointer.y-origY,
         angle: 0,
+        evented: false,
         fill: 'transparent',
          strokeWidth: 2,
          strokeDashArray: [10, 5],
@@ -113,6 +114,8 @@ canvas.on('mouse:up', function(o){
 $(window).load(function(){
     prototypefabric.initCanvas();
     setText();
+     dibujarMBR();
+
     $('#create-polygon').click(function() {
         polygonMode = true;
         pointMode = false;
@@ -152,6 +155,7 @@ var prototypefabric = new function(){
                 // -------
                 prototypefabric.polygon.polygonPoints = [];
                 prototypefabric.polygon.polygonLength = 0;
+                alert(poligonos );
                 console.log(poligonos)
             }
           if(polygonMode){
@@ -195,6 +199,13 @@ var prototypefabric = new function(){
                 canvas.renderAll();
             }
             //alert(x);
+            //------desactiva los  objetos para editarse-----
+            canvas.deactivateAll();
+            canvas.selection = false;
+            canvas.forEachObject(function(o) {
+            o.selectable = false;
+             });
+           //------------------------------------------------- 
             canvas.renderAll();
         });
     };
@@ -239,3 +250,53 @@ function resize() {
 
 window.addEventListener('load', resize, false);
 window.addEventListener('resize', resize, false);
+
+
+function dibujarMBR(){
+      var obj = {data:[
+        {nivel:1, tag:"R0", max:[500,500], min:[20,20]},
+        {nivel:2, tag:"R1", max:[450,450], min:[300,350]},
+        {nivel:2, tag:"R2", max:[300,200], min:[50,68]} ]}
+        var color="blue";
+        for (var i = 0; i <=2 ; i++) {
+            if( i>0 && obj.data[i].nivel != obj.data[i-1].nivel){
+                color=getRandomColor();
+            }
+            var xmax=obj.data[i].max[0];
+            var ymax=obj.data[i].max[1];
+            var xmin=obj.data[i].min[0];
+            var ymin=obj.data[i].min[1];
+            var w=xmax-xmin;var h=ymax-ymin;
+            rect = new fabric.Rect({
+            left: xmin,
+            top: ymin,
+            width: w,
+            height: h,
+            angle: 0,
+            evented: false,
+            fill: 'transparent',
+             strokeWidth: 2,
+             strokeDashArray: [10, 5],
+             stroke: color
+             });
+
+            canvas.add(rect);
+
+           var text = new fabric.Text(obj.data[i].tag, {
+            fontSize: 15,
+            evented: false,
+            left: xmin,
+            top: ymin
+            });
+           canvas.add(text);
+     }
+}
+
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}

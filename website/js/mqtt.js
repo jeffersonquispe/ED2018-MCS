@@ -5,7 +5,7 @@ var brokerInfo = {
   clientId     : "IdClient_WebApp",
   clientIdFree : "IdClient_WebAppFree",
   userWeb      : "Master",
-  url          : "localhost", //"r-tree.nezads.com"
+  url          : "r-tree.nezads.com"
 }
 
 function onSuccessConnect(){

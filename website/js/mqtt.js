@@ -76,7 +76,7 @@ function mqttSubscribe(mqttClient, topic){
  
  // https://github.com/mqttjs/MQTT.js
  // bower install angular-mqtt --save
-var mqttclient = NewWebAppClient(brokerInfo.clientIdFree, "", "#");
+var mqttclient = NewWebAppClient(brokerInfo.clientIdFree, "", "cpp/#");
 var mqttoptions = mqttclient[1];
 var local_clientMQTTPaho = mqttclient[0];
 local_clientMQTTPaho.connect(mqttoptions);

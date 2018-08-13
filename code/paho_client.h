@@ -1,13 +1,12 @@
 #include "mqtt/async_client.h"
 #include <chrono>
+#include "boost_ptree.h"
 
+using namespace chrono;
 //const std::string SERVER_ADDRESS("tcp://localhost:1883");
-const std::string SERVER_ADDRESS("tcp://r-tree.nezads.com:1883");
-const std::string CLIENT_ID("console_client");
-const std::string TOPIC("#");
-
-using namespace std;
-using namespace std::chrono;
+const string SERVER_ADDRESS("tcp://r-tree.nezads.com:1883");
+const string CLIENT_ID("console_client");
+const string TOPIC("#");
 
 const int QOS = 1;
 const int N_RETRY_ATTEMPTS = 5;
@@ -121,8 +120,12 @@ class callback : public virtual mqtt::callback, public virtual mqtt::iaction_lis
     std::cout << "\ttopic: '" << msg->get_topic() << "'" << std::endl;
     std::cout << "\tpayload: '" << msg->to_string() << "'\n" << std::endl;
     string payload;
+    vector<data_node> data_tree_regions;
     if(msg->get_topic().compare("web/insert") == 0){
       // llamar a insertar nodo
+      // obj = convertJSONtoObject(msg->to_string());
+      // data_tree_regions = insert();
+      payload = convertRegionsToJSON(data_tree_regions);
       mqttPublish("cpp/insert", payload);
     } else if(msg->get_topic().compare("web/knn") == 0){
       // llamar knn y generar el payload

@@ -57,7 +57,5 @@ prototypefabric.point = {
 
 
 function setText(points1,points2) {
-    var text,a;
     prototypefabric.point.points = [points1, points2]
-   a= document.getElementById("textareabox").value +="["+points1+","+points2+"],";
 };

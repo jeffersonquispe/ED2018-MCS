@@ -120,8 +120,6 @@ prototypefabric.polygon = {
 };
 
 function setTextPoint(points1,points2) {
-    var text, a;
     prototypefabric.polygon.polygonPoints[prototypefabric.polygon.polygonLength] = [points1, points2]
     prototypefabric.polygon.polygonLength++
-    a = document.getElementById("textareabox").value +="["+points1+","+points2+"],";
 };

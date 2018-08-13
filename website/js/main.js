@@ -218,3 +218,24 @@ function deleteObjects(){
         }
     }
 };
+
+function resize() {
+    var canvasSizer = document.getElementById("pizarra");
+    var canvasScaleFactor = canvasSizer.offsetWidth/525;
+    var width = canvasSizer.offsetWidth;
+    var height = canvasSizer.offsetHeight;
+    var ratio = canvas.getWidth() /canvas.getHeight();
+         if((width/height)>ratio){
+             width = height*ratio;
+         } else {
+             height = width / ratio;
+         }
+  var scale = width / canvas.getWidth();
+  var zoom = canvas.getZoom();
+  zoom *= scale;   
+  canvas.setDimensions({ width: width, height: height });
+    canvas.setViewportTransform([zoom , 0, 0, zoom , 0, 0])
+}
+
+window.addEventListener('load', resize, false);
+window.addEventListener('resize', resize, false);

@@ -11,13 +11,33 @@
     <script type="text/javascript" src="dependencies/fabric.min.js"></script>
     <script type="text/javascript" src="dependencies/mqttws31.js"></script>
   </head>
+ <style type="text/css">
+ 
+	body, html { height:100%;
+	  margin:0;
+	  padding:0;
+	  width:100%;
+	  }
+	 
+	#mando{ 
+	  width:39.5%;
+	  display:inline-block;
+	  margin:auto;
+	  height:94.5%;
+	  }
+	#pizarra{   width:59.5%;
+	  display:inline-block;
+	  height:94.5%;
+	  }
+
+ </style>
   <style type="text/css">
      *{
           font-family: "Roboto", sans-serif;
           font-weight: 100;
      }        
   </style>
-  <body style="overflow:hidden;width:90%;margin:auto;min-width:600px;max-width:2000px">
+  <body>
     <nav class="grey darken-4" role="navigation" id = "nav-bar" style = "height:50px;">
       <div class="nav-wrapper container">
         <a id="logo-container" class="brand-logo" style="line-height: 50px;font-size: 20px;">R TREE</a>
@@ -25,11 +45,12 @@
         </ul>
       </div>
     </nav>
-  <div id="general" style="width: 300px; height: 1000px; float: right ">
+  <div id="mando" style="float:right;">
+  <center>
+  <form id="dataForm" action="" method="get" style="max-width: 300px;padding: 0 5px;">
   <center>
     <img src="logo-ucsp.png" border="0" width="150" height="80" align="middle">
   </center>
-  <form id="dataForm" action="" method="get" style="max-width: 300px;padding: 0 5px;">
   <fieldset>
   <legend>Insertar:</legend>
   <br>
@@ -52,18 +73,21 @@
     </textarea>
   </fieldset>
   </form>
+  </center>
   </div>
-      <div class="section no-pad-bot no-pad-top">
-        <canvas id="c" style="border: 3px solid black;"></canvas>
+
+      <div class="section" id="pizarra" style="float:left">
+        <canvas id="c" style="border: 3px solid black; width:100%;height:100%"></canvas>
       </div>
       <script type="text/javascript">
-        function reiniciar(){
+          function reiniciar(){
           var canvas = document.getElementById('c');
           var contexto = canvas.getContext('2d');
           contexto.clearRect(0, 0, canvas.width, canvas.height);
         }
       </script>
   </body>
+
   <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript" src="js/polygon.js"></script>
   <script type="text/javascript" src="js/point.js"></script>

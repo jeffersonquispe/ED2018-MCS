@@ -19,7 +19,6 @@ var rect, isDown, origX, origY;//para el rectangulo
 
 $('#k').click(function(){
         data1 = document.getElementsByName("data1")[0].value;
-        data2 = document.getElementsByName("data2")[0].value;
 });
 
 
@@ -155,7 +154,7 @@ var prototypefabric = new function(){
                 // -------
                 prototypefabric.polygon.polygonPoints = [];
                 prototypefabric.polygon.polygonLength = 0;
-                alert(poligonos );
+                alert(poligonos);
                 console.log(poligonos)
             }
           if(polygonMode){
@@ -262,10 +261,10 @@ function dibujarMBR(){
             if( i>0 && obj.data[i].nivel != obj.data[i-1].nivel){
                 color=getRandomColor();
             }
-            var xmax=obj.data[i].max[0];
-            var ymax=obj.data[i].max[1];
-            var xmin=obj.data[i].min[0];
-            var ymin=obj.data[i].min[1];
+            var xmax=parseInt(obj.data[i].max[0]);
+            var ymax=parseInt(obj.data[i].max[1]);
+            var xmin=parseInt(obj.data[i].min[0]);
+            var ymin=parseInt(obj.data[i].min[1]);
             var w=xmax-xmin;var h=ymax-ymin;
             rect = new fabric.Rect({
             left: xmin,
@@ -300,3 +299,5 @@ function getRandomColor() {
   }
   return color;
 }
+
+//function min

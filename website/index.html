@@ -57,7 +57,7 @@
   <br>
   <input id="create-point" type="button" value="Puntos" />
   <input id="create-polygon" type="button" value="Poligonos" />
-  <button onclick="reiniciar()">Reiniciar </button>
+  <input type="button" onclick="location.href='/';" value="Reiniciar" />
   </fieldset>
   <fieldset>
     <legend>Busqueda:</legend>
@@ -80,15 +80,8 @@
       <div class="section" id="pizarra" style="float:left">
         <canvas id="c" style="border: 3px solid black; width:100%;height:100%"></canvas>
       </div>
-      <script type="text/javascript">
-          function reiniciar(){
-          var canvas = document.getElementById('c');
-          var contexto = canvas.getContext('2d');
-          contexto.clearRect(0, 0, canvas.width, canvas.height);
-        }
-      </script>
   </body>
-
+</html>
   <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript" src="js/polygon.js"></script>
   <script type="text/javascript" src="js/point.js"></script>

@@ -1,12 +1,10 @@
 #include "mqtt/async_client.h"
-#include <chrono>
 #include "boost_ptree.h"
 
-using namespace chrono;
 //const std::string SERVER_ADDRESS("tcp://localhost:1883");
 const string SERVER_ADDRESS("tcp://r-tree.nezads.com:1883");
 const string CLIENT_ID("console_client");
-const string TOPIC("#");
+const string TOPIC("web/#");
 
 const int QOS = 1;
 const int N_RETRY_ATTEMPTS = 5;

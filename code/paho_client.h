@@ -118,12 +118,9 @@ class callback : public virtual mqtt::callback, public virtual mqtt::iaction_lis
     std::cout << "\ttopic: '" << msg->get_topic() << "'" << std::endl;
     std::cout << "\tpayload: '" << msg->to_string() << "'\n" << std::endl;
     string payload;
-    vector<data_node> data_tree_regions;
     if(msg->get_topic().compare("web/insert") == 0){
-      // llamar a insertar nodo
-      // obj = convertJSONtoObject(msg->to_string());
-      // data_tree_regions = insert();
-      payload = convertRegionsToJSON(data_tree_regions);
+      ObjectRTree obj = convertJSONtoObject(msg->to_string());
+      payload = convertRegionsToJSON(data_tree);
       mqttPublish("cpp/insert", payload);
     } else if(msg->get_topic().compare("web/knn") == 0){
       // llamar knn y generar el payload

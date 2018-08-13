@@ -18,9 +18,9 @@ int main(int argc, char* argv[]) {
   payload = convertRegionsToJSON(data_tree);
   tm += PERIOD;
   
-  data_node a = convertJSONtoObject("{\"nivel\":1, \"min\":[6, 3], \"max\":[5, 9]}");
+  ObjectRTree a = convertJSONtoObject("{\"order\":1, \"min\":[6, 3], \"max\":[5, 9]}");
   
-  cout << a.nivel_data << " " << a.limits[0] << " " << a.limits[1] << " " << a.limits[2] << " " << a.limits[3] << endl;
+  cout << a.order << " " << a.rect.min[0] << " " << a.rect.min[1] << " " << a.rect.max[0] << " " << a.rect.max[1] << endl;
   
   }while( mqttPublish("web/rand", payload) == 0);
 }

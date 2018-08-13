@@ -90,7 +90,7 @@ local_clientMQTTPaho.onMessageArrived = function (message) {
   console.log(obj)
   
   if(message.destinationName == "cpp/insert"){
-    // graficar nuevas regiones
+    dibujarMBR(obj)
   } else if(message.destinationName == "cpp/knn"){
     // poner de otro color los poligonos cercanos
   } else if(message.destinationName == "cpp/search"){

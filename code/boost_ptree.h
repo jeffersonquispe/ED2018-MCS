@@ -3,28 +3,41 @@
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <chrono>
+#include "RTree.h"
 
 using namespace std;
+using namespace chrono;
 namespace pt = boost::property_tree;
 
-struct data_node{
-  double limits[4];
-  bool leaf;
-  int nivel_data; // nivel
-  string tag; // R1
-};
-
-data_node convertJSONtoObject(string input){
-  stringstream fromJSON, toJSON;
+ObjectRTree convertJSONtoObject(string input){
+  stringstream fromJSON;
   fromJSON << input;
-  pt::ptree iroot, oroot;
+  pt::ptree iroot;
   pt::read_json(fromJSON, iroot);
 
-  data_node a;
-  return a;
+  int nivel = iroot.get<int>("order");  
+  std::vector<double> minPoint;
+  for (pt::ptree::value_type &min : iroot.get_child("min")){
+    minPoint.push_back(min.second.get_value<double>());
+  }
+  
+  std::vector<double> maxPoint;
+  for (pt::ptree::value_type &max : iroot.get_child("max")){
+    maxPoint.push_back(max.second.get_value<double>());
+  }
+
+  return ObjectRTree(Rect(minPoint[0], minPoint[1], maxPoint[0], maxPoint[1]), nivel); // xmin, ymin, xmax, ymax
+/*  a.nivel_data = nivel;
+  a.limits[0] = minPoint[0]; // xmin
+  a.limits[1] = maxPoint[0]; // xmax
+  a.limits[2] = minPoint[1]; // ymin
+  a.limits[3] = maxPoint[1]; // ymax
+  return a;*/
 }
 
 string convertRegionsToJSON(vector<data_node> data_tree){
+  stringstream toJSON;
   int size = data_tree.size();
   pt::ptree oroot, data, element[size];
   
@@ -49,7 +62,6 @@ string convertRegionsToJSON(vector<data_node> data_tree){
   }
   oroot.add_child("data", data);
   
-  stringstream toJSON;
   pt::write_json(toJSON, oroot);
   string output = toJSON.str();
   return output;

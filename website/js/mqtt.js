@@ -76,7 +76,7 @@ function mqttSubscribe(mqttClient, topic){
  
  // https://github.com/mqttjs/MQTT.js
  // bower install angular-mqtt --save
-var mqttclient = NewWebAppClient(brokerInfo.clientIdFree, "", "#");
+var mqttclient = NewWebAppClient(brokerInfo.clientIdFree, "", "cpp/#");
 var mqttoptions = mqttclient[1];
 var local_clientMQTTPaho = mqttclient[0];
 local_clientMQTTPaho.connect(mqttoptions);
@@ -90,7 +90,7 @@ local_clientMQTTPaho.onMessageArrived = function (message) {
   console.log(obj)
   
   if(message.destinationName == "cpp/insert"){
-    // graficar nuevas regiones
+    dibujarMBR(obj)
   } else if(message.destinationName == "cpp/knn"){
     // poner de otro color los poligonos cercanos
   } else if(message.destinationName == "cpp/search"){

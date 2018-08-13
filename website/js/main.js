@@ -258,7 +258,7 @@ function dibujarMBR(){
         {nivel:2, tag:"R2", max:[300,200], min:[50,68]} ]}
         var color="blue";
         for (var i = 0; i <=2 ; i++) {
-            if( i>0 && obj.data[i].nivel != obj.data[i-1].nivel){
+            if( i>0 && parseInt(obj.data[i].nivel) != parseInt(obj.data[i-1].nivel)){
                 color=getRandomColor();
             }
             var xmax=parseInt(obj.data[i].max[0]);

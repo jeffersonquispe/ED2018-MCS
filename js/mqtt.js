@@ -95,7 +95,7 @@ local_clientMQTTPaho.onMessageArrived = function (message) {
   } else if(message.destinationName == "cpp/knn"){
     // llamar knn
     // publicar resultado en cpp/knn
-  } else if(message.destinationName == "cpp/insert"){
+  } else if(message.destinationName == "cpp/search"){
     // llamar search
     // publicar resultado en cpp/search
   }

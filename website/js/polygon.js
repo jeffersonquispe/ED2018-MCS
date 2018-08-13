@@ -121,6 +121,6 @@ prototypefabric.polygon = {
 };
 
 function setTextPoint(points1,points2) {
-    prototypefabric.polygon.polygonPoints[prototypefabric.polygon.polygonLength] = [points1, points2]
+    prototypefabric.polygon.polygonPoints[prototypefabric.polygon.polygonLength] = [parseInt(points1), parseInt(points2)]
     prototypefabric.polygon.polygonLength++
 };

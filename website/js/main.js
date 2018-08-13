@@ -112,8 +112,6 @@ canvas.on('mouse:up', function(o){
 //------------------------------------------------------------
 $(window).load(function(){
     prototypefabric.initCanvas();
-    setText();
-     dibujarMBR();
 
     $('#create-polygon').click(function() {
         polygonMode = true;
@@ -149,12 +147,14 @@ var prototypefabric = new function(){
                 prototypefabric.polygon.generatePolygon(pointArray);
                 // -------
                 // enviar el nuevo objeto a añadir
+
                 poligonos[polCount] = prototypefabric.polygon.polygonPoints;
                 polCount++;
                 // -------
+                minmax_pol();
                 prototypefabric.polygon.polygonPoints = [];
                 prototypefabric.polygon.polygonLength = 0;
-                alert(poligonos);
+                //alert(poligonos);
                 console.log(poligonos)
             }
           if(polygonMode){
@@ -251,20 +251,16 @@ window.addEventListener('load', resize, false);
 window.addEventListener('resize', resize, false);
 
 
-function dibujarMBR(){
-      var obj = {data:[
-        {nivel:1, tag:"R0", max:[500,500], min:[20,20]},
-        {nivel:2, tag:"R1", max:[450,450], min:[300,350]},
-        {nivel:2, tag:"R2", max:[300,200], min:[50,68]} ]}
+function dibujarMBR(regiones){
         var color="blue";
         for (var i = 0; i <=2 ; i++) {
-            if( i>0 && parseInt(obj.data[i].nivel) != parseInt(obj.data[i-1].nivel)){
+            if( i>0 && parseInt(regiones.data[i].nivel) != parseInt(regiones.data[i-1].nivel)){
                 color=getRandomColor();
             }
-            var xmax=parseInt(obj.data[i].max[0]);
-            var ymax=parseInt(obj.data[i].max[1]);
-            var xmin=parseInt(obj.data[i].min[0]);
-            var ymin=parseInt(obj.data[i].min[1]);
+            var xmax=parseInt(regiones.data[i].max[0]);
+            var ymax=parseInt(regiones.data[i].max[1]);
+            var xmin=parseInt(regiones.data[i].min[0]);
+            var ymin=parseInt(regiones.data[i].min[1]);
             var w=xmax-xmin;var h=ymax-ymin;
             rect = new fabric.Rect({
             left: xmin,
@@ -281,7 +277,7 @@ function dibujarMBR(){
 
             canvas.add(rect);
 
-           var text = new fabric.Text(obj.data[i].tag, {
+           var text = new fabric.Text(regiones.data[i].tag, {
             fontSize: 15,
             evented: false,
             left: xmin,
@@ -300,4 +296,40 @@ function getRandomColor() {
   return color;
 }
 
-//function min
+function minmax_pol(){
+    var temp=0;
+    var minmax=[];
+    //cuudado con maximo por si deciden cambiar dimension de canvas
+    var xmin=800,ymin=600,xmax=0,ymax=0;
+    var resultado;
+    minmax=dividirCadena(poligonos[0].toString())
+    for(var i=0;i<=minmax.length;i++){
+        alert(poligonos.length);
+        if(i%2==0){
+            alert("par");
+            if(poligonos[i]<xmin){
+                xmin=poligonos[i];   
+                alert(xmin+"xmin");
+            }
+            if(poligonos[i]>xmax){
+                xmax=poligonos[i];
+            }
+        } else{
+            lert("imppar");
+            if(poligonos[i]<ymin){
+                ymin=poligonos[i];   
+            }
+            if(poligonos[i]>ymax){
+                ymax=poligonos[i];
+            }
+        }   
+    }
+    return xmin+","+ymin+","+xmax+","+ymax;
+}
+
+function dividirCadena(mensaje) {
+
+    var arrayDeCadenas = mensaje.split(",");
+    return arrayDeCadenas;
+}
+

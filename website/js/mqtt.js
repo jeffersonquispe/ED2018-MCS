@@ -90,13 +90,10 @@ local_clientMQTTPaho.onMessageArrived = function (message) {
   console.log(obj)
   
   if(message.destinationName == "cpp/insert"){
-    // llamar a insertar nodo
-    // publicar resultado en cpp/insert
+    // graficar nuevas regiones
   } else if(message.destinationName == "cpp/knn"){
-    // llamar knn
-    // publicar resultado en cpp/knn
+    // poner de otro color los poligonos cercanos
   } else if(message.destinationName == "cpp/search"){
-    // llamar search
-    // publicar resultado en cpp/search
+    // pinta los poligonos que esten en el rectangulo
   }
 };

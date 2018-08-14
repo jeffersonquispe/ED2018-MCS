@@ -18,12 +18,12 @@ ObjectRTree convertJSONtoObject(string input){
 
   int nivel = iroot.get<int>("order");  
   std::vector<double> minPoint;
-  for (pt::ptree::value_type &min : iroot.get_child("min")){
+  for (pt::ptree::value_type &min : iroot.get_child("minP")){
     minPoint.push_back(min.second.get_value<double>());
   }
   
   std::vector<double> maxPoint;
-  for (pt::ptree::value_type &max : iroot.get_child("max")){
+  for (pt::ptree::value_type &max : iroot.get_child("maxP")){
     maxPoint.push_back(max.second.get_value<double>());
   }
 
@@ -53,9 +53,9 @@ string convertRegionsToJSON(vector<data_node> data_tree, int size){
       points.push_back(std::make_pair("", pointsMax));
       points.push_back(std::make_pair("", pointsMin));
       if(j==0){
-        element[i].add_child("min",  points);
+        element[i].add_child("minP",  points);
       } else if (j==1){
-        element[i].add_child("max",  points);
+        element[i].add_child("maxP",  points);
       }
     }
     data.push_back(std::make_pair("", element[i]));

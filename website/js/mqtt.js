@@ -87,8 +87,9 @@ local_clientMQTTPaho.connect(mqttoptions);
 local_clientMQTTPaho.onMessageArrived = function (message) {
   console.log(message.payloadString)
   var obj = JSON.parse(message.payloadString);
+  console.log(obj.data)
   if(message.destinationName == "cpp/insert"){
-    //dibujarMBR(obj.data)
+    dibujarMBR(obj.data)
   } else if(message.destinationName == "cpp/knn"){
     // poner de otro color los poligonos cercanos
   } else if(message.destinationName == "cpp/search"){

@@ -150,8 +150,8 @@ var prototypefabric = new function(){
         minmaxPoints = minmax_pol(prototypefabric.polygon.polygonPoints)
         var toSend = {
           order: polCount,
-          min: [minmaxPoints[0][0], minmaxPoints[0][1]],
-          max: [minmaxPoints[1][0], minmaxPoints[1][1]],
+          minP: [minmaxPoints[0][0], minmaxPoints[0][1]],
+          maxP: [minmaxPoints[1][0], minmaxPoints[1][1]],
         }
         mqttPublish(local_clientMQTTPaho, "web/insert", toSend)
         prototypefabric.polygon.polygonPoints = [];
@@ -167,8 +167,8 @@ var prototypefabric = new function(){
         console.log(prototypefabric.point.points)
         var toSend = {
           order: polCount,
-          min: [prototypefabric.point.points[0], prototypefabric.point.points[1]],
-          max: [prototypefabric.point.points[0], prototypefabric.point.points[1]],
+          minP: [prototypefabric.point.points[0], prototypefabric.point.points[1]],
+          maxP: [prototypefabric.point.points[0], prototypefabric.point.points[1]],
         }
         mqttPublish(local_clientMQTTPaho, "web/insert", toSend)
         prototypefabric.point.points = [];
@@ -251,14 +251,14 @@ window.addEventListener('resize', resize, false);
 
 function dibujarMBR(regiones){
   var color="blslue";
-  for (var i = 0; i <=2 ; i++) {
-    if( i>0 && parseInt(regiones.data[i].nivel) != parseInt(regiones.data[i-1].nivel)){
+  for (var i = 0; i < regiones.length ; i++) {
+    if( i>0 && parseInt(regiones[i].nivel) != parseInt(regiones[i-1].nivel)){
       color=getRandomColor();
     }
-    var xmax=parseInt(regiones.data[i].max[0]);
-    var ymax=parseInt(regiones.data[i].max[1]);
-    var xmin=parseInt(regiones.data[i].min[0]);
-    var ymin=parseInt(regiones.data[i].min[1]);
+    var xmax=parseInt(regiones[i].maxP[0]);
+    var ymax=parseInt(regiones[i].maxP[1]);
+    var xmin=parseInt(regiones[i].minP[0]);
+    var ymin=parseInt(regiones[i].minP[1]);
     var w=xmax-xmin;var h=ymax-ymin;
     rect = new fabric.Rect({
       left: xmin,
@@ -275,7 +275,7 @@ function dibujarMBR(regiones){
 
     canvas.add(rect);
 
-    var text = new fabric.Text(regiones.data[i].tag, {
+    var text = new fabric.Text(regiones[i].tag, {
       fontSize: 15,
       evented: false,
       left: xmin,

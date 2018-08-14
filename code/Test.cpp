@@ -9,6 +9,8 @@
 
 using namespace std;
 
+typedef double ValueType;
+
 struct Rect rects[] =
 {
   Rect(0.1, 0.1, 2.1, 2.1), // xmin, ymin, xmax, ymax (for 2 dimensional RTree)
@@ -24,6 +26,14 @@ struct Rect rects[] =
 };
 
 int nrects = sizeof(rects) / sizeof(rects[0]);
+
+struct Rect rects2[] =
+{
+  Rect(2.1, 4., 4., 6.),
+  Rect(10.1, 3., 11., 4.),
+  Rect(5.1, 1., 6., 2),
+};
+int nrects2 = sizeof(rects2) / sizeof(rects2[0]);
 
 Rect search_rect(4., 0., 11., 6.); // search will find above rects that this one overlaps
 
@@ -54,16 +64,29 @@ int main()
     tree.Updatetree(rects[i].min, rects[i].max, i); // Note, all values including zero are fine in this version
   }
 
-  //tree.Updatetree(rects[9].min, rects[9].max, 9); // Note, all values including zero are fine in this version
-
-
   cout<< "Iniciando búsqueda"<<endl;
   cout<< "------------------"<<endl;
 
   nhits = tree.Search(search_rect.min, search_rect.max, MySearchCallback);
 
   cout << "Se encontraron " << nhits << " elementos.\n";
+/*
+  tree.RemoveAll();
+  cout<<"RESETEANDO ARBOL"<<endl;
+  cout<<"------------------"<<endl;
+  cout<<"------------------"<<endl;
+  //tree.Updatetree(rects[9].min, rects[9].max, 9); // Note, all values including zero are fine in this version
+  for(i=0; i<nrects2; i++)
+  {
+    tree.Updatetree(rects2[i].min, rects2[i].max, i); // Note, all values including zero are fine in this version
+  }
+*/
+  cout<< "Iniciando búsqueda"<<endl;
+  cout<< "------------------"<<endl;
 
+  nhits = tree.Search(search_rect.min, search_rect.max, MySearchCallback);
+
+  cout << "Se encontraron " << nhits << " elementos.\n";
   return 0;
 
 }

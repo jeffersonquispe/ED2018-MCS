@@ -96,6 +96,7 @@ public:
   RTree(const RTree& other);
   virtual ~RTree();
 
+  void get_tags();
   void Insert(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], const DATATYPE& a_dataId);
   void Updatetree(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], const DATATYPE& a_dataId);
 
@@ -540,13 +541,12 @@ void RTREE_QUAL::read_MBR_tree(Node *p_node){
       data_tree[export_aux].limits[2*axis+1]=p_node->m_branch[index].m_rect.m_max[axis];
       //cout<<data_tree[export_aux].limits[2*axis+1]<<" ";
     }
-    data_tree[export_aux].tag="rk";
     //cout<<"]"<<endl;
 
     if(p_node->m_level == 0)
     {
       data_tree[export_aux].leaf=true;
-      data_tree[export_aux].nivel_data=p_node->m_branch[index].m_data;
+      data_tree[export_aux].nivel_data=p_node->m_level;
       //cout<<"export_aux_LEAF = "<<export_aux<<endl;
     }
     else if (p_node->m_level > 0) {
@@ -562,6 +562,23 @@ void RTREE_QUAL::read_MBR_tree(Node *p_node){
 
   }
 
+}
+
+RTREE_TEMPLATE
+void RTREE_QUAL::get_tags(){
+   int tag_aux=0;
+  cout<<"M_ROOT LEVEL"<<m_root->m_level<<endl;
+  for (int i = m_root->m_level; i >-1; i--) {
+    cout<<"level: "<<i<<endl;
+    for (int j = 0; j < export_aux+1; j++) {
+      //cout<<"DATA_TREE LEVEL: "<<data_tree[j].nivel_data<<", j = "<<i<<endl;
+      if (data_tree[j].nivel_data==i) {
+        cout<<"Tag_aux: "<<tag_aux<<", J= "<<j<<endl;
+        data_tree[j].tag="R"+to_string(tag_aux);
+        tag_aux++;
+      }
+    }
+  }
 }
 
 RTREE_TEMPLATE
@@ -583,6 +600,7 @@ void RTREE_QUAL::Updatetree(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[
   //cout<<"--------------------"<<endl;
   //cout<<"Elementos en root: "<<m_root->m_count<<endl;
   read_MBR_tree(m_root);
+  get_tags();
   cout<<"PLOTING EXPORT DATA"<<endl;
   cout<<"N_MBR: "<<export_aux+1<<endl;
   cout<<"-----------------------------------------"<<endl;

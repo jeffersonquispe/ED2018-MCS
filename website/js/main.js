@@ -15,12 +15,13 @@ var poligonos = [];
 var polCount = 0;
 var puntos = [];
 var puntCount = 0;
+var minmaxPoints;
 var rect, isDown, origX, origY;//para el rectangulo
+var idRect=0;//idRect
 
 $('#k').click(function(){
         data1 = document.getElementsByName("data1")[0].value;
 });
-
 
 //________________Rectangulo____________________
 /*$('#create-rect2').click(function(){
@@ -80,7 +81,8 @@ $('#create-rect2').click(function(){
         fill: 'transparent',
          strokeWidth: 2,
          strokeDashArray: [10, 5],
-         stroke: 'black'
+         stroke: 'black',
+         id:idRect //para borrar rect
     });
     canvas.add(rect);
         count++;
@@ -106,13 +108,21 @@ canvas.on('mouse:move', function(o){
 
 canvas.on('mouse:up', function(o){
   isDown = false;
+  //----------elimina before rect de search-------
+  if(idRect===0){
+    idRect++;
+  }else{
+        canvas.remove(canvas.getObjects()[0]);
+        idRect++;
+  }
+  //----------------------------------------
+    
 });
 
 });
 //------------------------------------------------------------
 $(window).load(function(){
     prototypefabric.initCanvas();
-
     $('#create-polygon').click(function() {
         polygonMode = true;
         pointMode = false;
@@ -122,7 +132,6 @@ $(window).load(function(){
         polygonMode = false;
         pointMode = true;
         prototypefabric.point.drawPoint();
-      // alert("crear punto");
     });
    $('#create-rect').click(function() {
     alert("crear punto");
@@ -136,13 +145,9 @@ var prototypefabric = new function(){
         canvas = window._canvas = new fabric.Canvas('c');
         canvas.setWidth(800);
         canvas.setHeight(600);
-        //alert($(window).width());
-        //alert($(window).height()-$('#nav-bar').height());
         //canvas.selection = false;
 
         canvas.on('mouse:down', function (options) {
-           /* alert(polygonMode);
-            alert(pointMode);*/
             if(options.target && options.target.id == pointArray[0].id){
                 prototypefabric.polygon.generatePolygon(pointArray);
                 // -------
@@ -150,16 +155,15 @@ var prototypefabric = new function(){
 
                 poligonos[polCount] = prototypefabric.polygon.polygonPoints;
                 polCount++;
+                minmaxPoints = minmax_pol(prototypefabric.polygon.polygonPoints)
+                console.log(minmaxPoints)
+                console.log(prototypefabric.polygon.polygonPoints)
                 // -------
-                minmax_pol();
                 prototypefabric.polygon.polygonPoints = [];
                 prototypefabric.polygon.polygonLength = 0;
-                //alert(poligonos);
-                console.log(poligonos)
             }
           if(polygonMode){
                 prototypefabric.polygon.addPoint(options);
-               // alert("hoal desde poly");
             }
            if(pointMode){
                 prototypefabric.point.addPoint(options);
@@ -179,7 +183,6 @@ var prototypefabric = new function(){
         });
 
         canvas.on('mouse:up', function (options) {
-            //alert("hola 3");
 
         });
         canvas.on('mouse:move', function (options) {
@@ -252,7 +255,7 @@ window.addEventListener('resize', resize, false);
 
 
 function dibujarMBR(regiones){
-        var color="blue";
+        var color="blslue";
         for (var i = 0; i <=2 ; i++) {
             if( i>0 && parseInt(regiones.data[i].nivel) != parseInt(regiones.data[i-1].nivel)){
                 color=getRandomColor();
@@ -296,40 +299,24 @@ function getRandomColor() {
   return color;
 }
 
-function minmax_pol(){
+function minmax_pol(pol){
     var temp=0;
-    var minmax=[];
+    var min=[pol[0][0], pol[0][1]], max =[pol[0][0], pol[0][1]];
     //cuudado con maximo por si deciden cambiar dimension de canvas
-    var xmin=800,ymin=600,xmax=0,ymax=0;
-    var resultado;
-    minmax=dividirCadena(poligonos[0].toString())
-    for(var i=0;i<=minmax.length;i++){
-        alert(poligonos.length);
-        if(i%2==0){
-            alert("par");
-            if(poligonos[i]<xmin){
-                xmin=poligonos[i];   
-                alert(xmin+"xmin");
-            }
-            if(poligonos[i]>xmax){
-                xmax=poligonos[i];
-            }
-        } else{
-            lert("imppar");
-            if(poligonos[i]<ymin){
-                ymin=poligonos[i];   
-            }
-            if(poligonos[i]>ymax){
-                ymax=poligonos[i];
-            }
-        }   
+    for (var j = 1; j< pol.length; j++) {
+        if(pol[j][0]<min[0]){
+          min[0] = pol[j][0]
+        }
+        if(pol[j][0]>max[0]){
+          max[0] = pol[j][0]
+        }
+        if(pol[j][1]<min[1]){
+          min[1] = pol[j][1]
+        }
+        if(pol[j][1]>max[1]){
+          max[1] = pol[j][1]
+        }
     }
-    return xmin+","+ymin+","+xmax+","+ymax;
-}
-
-function dividirCadena(mensaje) {
-
-    var arrayDeCadenas = mensaje.split(",");
-    return arrayDeCadenas;
+    return [min, max]
 }
 

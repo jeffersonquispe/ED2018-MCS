@@ -3,7 +3,6 @@ prototypefabric.point = {
     drawPoint : function() {
         pointMode = true;
         pointArray = new Array();
-       // alert("hola draw");
         polygonMode = false;
         lineArray = new Array();
         activeLine;
@@ -46,6 +45,7 @@ prototypefabric.point = {
         setText(points[0],points[1]);
         pointArray.push(circle);
         canvas.add(circle);
+        pointMode = false;
        // alert("hola desde addpoint 2");
     },
 

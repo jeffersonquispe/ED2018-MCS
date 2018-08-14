@@ -69,7 +69,7 @@ struct  data_node{
   //data_node();
 };
 vector<data_node> data_tree;
-
+vector<int> search_export;
 int export_aux;
 // Fwd decl
 class RTFileStream;  // File I/O helper class, look below for implementation and notes.
@@ -102,6 +102,7 @@ public:
   void Remove(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], const DATATYPE& a_dataId);
 
   int Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], std::function<bool (const DATATYPE&)> callback) const;
+  int Search_1(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], std::function<bool (const DATATYPE&)> callback) const;
 
   /// Remove all entries from tree
   void RemoveAll();
@@ -297,7 +298,7 @@ protected:
   {
     Rect m_rect;                                  ///< Bounds
     Node* m_child;                                ///< Child node
-    DATATYPE m_data;                              ///< Data Id
+    int m_data;                              ///< Data Id
   };
 
   /// Node for each branch level
@@ -362,9 +363,11 @@ protected:
   ListNode* AllocListNode();
   void FreeListNode(ListNode* a_listNode);
   bool Overlap(Rect* a_rectA, Rect* a_rectB) const;
-  bool Cover(Rect* a_rectA, Rect* a_rectB) const;
+  bool Cover(Rect* a_rectA, Branch* a_rectB) const;
+  bool Cover_1(Rect* a_rectA, Rect* a_rectB) const;
   void ReInsert(Node* a_node, ListNode** a_listNode);
   bool Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::function<bool (const DATATYPE&)> callback) const;
+  bool Search_1(Node* a_node, Rect* a_rect, int& a_foundCount, std::function<bool (const DATATYPE&)> callback) const;
   void RemoveAllRec(Node* a_node);
   void Reset();
   void CountRec(Node* a_node, int& a_count);
@@ -593,6 +596,7 @@ void RTREE_QUAL::Updatetree(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[
     cout<<" ]"<<endl;
     cout<<"Leaf: "<<data_tree[i].leaf<<endl;
     cout<<"ID: "<<data_tree[i].nivel_data<<endl;
+    cout<<"Tag: "<<data_tree[i].tag<<endl;
     cout<<"----------------------------------------"<<endl;
     cout<<"----------------------------------------"<<endl;
     cout<<"----------------------------------------"<<endl;
@@ -622,7 +626,7 @@ void RTREE_QUAL::Remove(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMD
 
 
 RTREE_TEMPLATE
-int RTREE_QUAL::Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], std::function<bool (const DATATYPE&)> callback) const
+int RTREE_QUAL::Search_1(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], std::function<bool (const DATATYPE&)> callback) const
 {
 #ifdef _DEBUG
   for(int index=0; index<NUMDIMS; ++index)
@@ -643,6 +647,38 @@ int RTREE_QUAL::Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDI
 
   int foundCount = 0;
   Search(m_root, &rect, foundCount, callback);
+
+  return foundCount;
+}
+
+RTREE_TEMPLATE
+int RTREE_QUAL::Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], std::function<bool (const DATATYPE&)> callback) const
+{
+#ifdef _DEBUG
+  for(int index=0; index<NUMDIMS; ++index)
+  {
+    ASSERT(a_min[index] <= a_max[index]);
+  }
+#endif //_DEBUG
+
+  Rect rect;
+  search_export.clear();
+
+  for(int axis=0; axis<NUMDIMS; ++axis)
+  {
+    rect.m_min[axis] = a_min[axis];
+    rect.m_max[axis] = a_max[axis];
+  }
+
+  // NOTE: May want to return search result another way, perhaps returning the number of found elements here.
+
+  int foundCount = 0;
+  Search(m_root, &rect, foundCount, callback);
+  cout<<"Imprimiendo vector search: "<<endl;
+  cout<<"---------------------------"<<endl;
+  for (int i = 0; i < search_export.size(); i++) {
+    cout<<"Elemento "<<i<<" con ID "<<search_export[i]<<endl;
+  }
 
   return foundCount;
 }
@@ -1677,7 +1713,7 @@ bool RTREE_QUAL::Overlap(Rect* a_rectA, Rect* a_rectB) const
 }
 
 RTREE_TEMPLATE
-bool RTREE_QUAL::Cover(Rect* a_rectA, Rect* a_rectB) const
+bool RTREE_QUAL::Cover_1(Rect* a_rectA, Rect* a_rectB) const
 {
   ASSERT(a_rectA && a_rectB);
   bool aux=true;
@@ -1701,6 +1737,34 @@ bool RTREE_QUAL::Cover(Rect* a_rectA, Rect* a_rectB) const
   return aux;
 }
 
+RTREE_TEMPLATE
+bool RTREE_QUAL::Cover(Rect* a_rectA, Branch* a_branch) const
+{
+  Rect* a_rectB=&a_branch->m_rect;
+  ASSERT(a_rectA && a_rectB);
+  bool aux=true;
+
+  for(int index=0; index < NUMDIMS; ++index)
+  {
+    if (a_rectA->m_min[index] > a_rectB->m_min[index] ||
+        a_rectA->m_max[index] < a_rectB->m_max[index])
+    {
+      aux=false;
+    }
+  }
+  if(aux){
+    cout<<"Elemento encontrado: [";
+    //search_export=
+    for(int index=0; index < NUMDIMS; ++index){
+      cout<<a_rectB->m_min[index]<<" "<<a_rectB->m_max[index]<<" ";
+    }
+    std::cout<<"]"<<endl<<"---------------------------------------------"<<endl;
+    search_export.push_back(a_branch->m_data);
+    cout<<"ID: "<<a_branch->m_data<<endl;
+  }
+  return aux;
+}
+
 // Add a node to the reinsertion list.  All its branches will later
 // be reinserted into the index structure.
 RTREE_TEMPLATE
@@ -1717,7 +1781,7 @@ void RTREE_QUAL::ReInsert(Node* a_node, ListNode** a_listNode)
 
 // Search in an index tree or subtree for all data retangles that overlap the argument rectangle.
 RTREE_TEMPLATE
-bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::function<bool (const DATATYPE&)> callback) const
+bool RTREE_QUAL::Search_1(Node* a_node, Rect* a_rect, int& a_foundCount, std::function<bool (const DATATYPE&)> callback) const
 {
   ASSERT(a_node);
   ASSERT(a_node->m_level >= 0);
@@ -1759,6 +1823,47 @@ bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::func
   return true; // Continue searching
 }
 
+RTREE_TEMPLATE
+bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::function<bool (const DATATYPE&)> callback) const
+{
+  ASSERT(a_node);
+  ASSERT(a_node->m_level >= 0);
+  ASSERT(a_rect);
+
+  if(a_node->IsInternalNode())
+  {
+    // This is an internal node in the tree
+    for(int index=0; index < a_node->m_count; ++index)
+    {
+      if(Overlap(a_rect, &a_node->m_branch[index].m_rect))
+      {
+        if(!Search(a_node->m_branch[index].m_child, a_rect, a_foundCount, callback))
+        {
+          // The callback indicated to stop searching
+          return false;
+        }
+      }
+    }
+  }
+  else
+  {
+    // This is a leaf node
+    for(int index=0; index < a_node->m_count; ++index)
+    {
+      if(Cover(a_rect, &a_node->m_branch[index]))
+      {
+        int& id = a_node->m_branch[index].m_data;
+        ++a_foundCount;
+        if(callback && !callback(id))
+        {
+          return false; // Don't continue searching
+        }
+      }
+    }
+  }
+
+  return true; // Continue searching
+}
 
 #undef RTREE_TEMPLATE
 #undef RTREE_QUAL

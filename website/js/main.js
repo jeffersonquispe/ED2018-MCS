@@ -285,6 +285,12 @@ function dibujarMBR(regiones){
   }
 }
 
+function pintarEncontrados(Ids){
+  for (var i = 0; i < Ids.length ; i++) {
+    console.log(poligonos[i])
+  }
+}
+
 function getRandomColor() {
   var letters = '0123456789ABCDEF';
   var color = '#';

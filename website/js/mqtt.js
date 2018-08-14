@@ -91,7 +91,7 @@ local_clientMQTTPaho.onMessageArrived = function (message) {
   if(message.destinationName == "cpp/insert"){
     dibujarMBR(obj.data)
   } else if(message.destinationName == "cpp/knn"){
-    // poner de otro color los poligonos cercanos
+    //pintarEncontrados(obj.data) = [0, 5, 8, 6]
   } else if(message.destinationName == "cpp/search"){
     // pinta los poligonos que esten en el rectangulo
   }

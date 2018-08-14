@@ -66,3 +66,38 @@ string convertRegionsToJSON(vector<data_node> data_tree, int size){
   string output = toJSON.str();
   return output;
 }
+
+Rect convertJSONToIDs(string input){
+  stringstream fromJSON;
+  fromJSON << input;
+  pt::ptree iroot;
+  pt::read_json(fromJSON, iroot);
+
+  std::vector<double> minPoint;
+  for (pt::ptree::value_type &min : iroot.get_child("minP")){
+    minPoint.push_back(min.second.get_value<double>());
+  }
+  
+  std::vector<double> maxPoint;
+  for (pt::ptree::value_type &max : iroot.get_child("maxP")){
+    maxPoint.push_back(max.second.get_value<double>());
+  }
+
+  return Rect(minPoint[0], minPoint[1], maxPoint[0], maxPoint[1]);
+}
+
+string convertIDsToJSON(vector<int> search_t){
+  stringstream toJSON;
+  int size = search_t.size();
+  pt::ptree oroot, data, element;
+  
+  for(int i=0; i<size;i++){
+    element.put<int>("", search_t[i]);
+    data.push_back(std::make_pair("", element));
+  }
+  oroot.add_child("data", data);
+  
+  pt::write_json(toJSON, oroot);
+  string output = toJSON.str();
+  return output;
+}

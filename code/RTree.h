@@ -71,7 +71,15 @@ struct  data_node{
 vector<data_node> data_tree;
 vector<int> search_export;
 int export_aux;
+
+bool MySearchCallback(ValueType id){
+  cout << "Hit data rect " << id << "\n";
+  return true; // keep going
+}
+
 // Fwd decl
+
+
 class RTFileStream;  // File I/O helper class, look below for implementation and notes.
 
 template<class DATATYPE, class ELEMTYPE, int NUMDIMS,

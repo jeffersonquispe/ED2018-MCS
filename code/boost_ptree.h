@@ -36,9 +36,9 @@ ObjectRTree convertJSONtoObject(string input){
   return a;*/
 }
 
-string convertRegionsToJSON(vector<data_node> data_tree){
+string convertRegionsToJSON(vector<data_node> data_tree, int size){
   stringstream toJSON;
-  int size = data_tree.size();
+  //int size = data_tree.size();
   pt::ptree oroot, data, element[size];
   
   for(int i=0; i<size;i++){

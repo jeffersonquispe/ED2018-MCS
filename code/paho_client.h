@@ -36,10 +36,11 @@ int mqttPublish(string TOPIC, string payload) {
 		cli.connect(connOpts)->wait();
 		cout << "OK\n" << endl;
 		
+		cout << "\nSending Message..." << flush;
 		char* cstr = new char [payload.size() + 1];
 		std::strcpy(cstr, payload.c_str());
-		cout << payload << endl;
 		top.publish(std::move(cstr));
+		cout << "OK\n" << endl;
 
 		cout << "\nDisconnecting..." << flush;
 		cli.disconnect()->wait();
@@ -53,132 +54,60 @@ int mqttPublish(string TOPIC, string payload) {
  	return 0;
 }
 
-class action_listener : public virtual mqtt::iaction_listener{
-  std::string name_;
-
-  void on_failure(const mqtt::token& tok) override {
-    std::cout << name_ << " failure";
-    if (tok.get_message_id() != 0)
-      std::cout << " for token: [" << tok.get_message_id() << "]" << std::endl;
-    std::cout << std::endl;
-  }
-
-  void on_success(const mqtt::token& tok) override {
-    std::cout << name_ << " success";
-    if (tok.get_message_id() != 0)
-      std::cout << " for token: [" << tok.get_message_id() << "]" << std::endl;
-    auto top = tok.get_topics();
-    if (top && !top->empty())
-      std::cout << "\ttoken topic: '" << (*top)[0] << "', ..." << std::endl;
-    std::cout << std::endl;
-  }
-
-public:
-  action_listener(const std::string& name) : name_(name) {}
-};
-
-class callback : public virtual mqtt::callback, public virtual mqtt::iaction_listener {
-  int nretry_;
-  mqtt::async_client& cli_;
-  mqtt::connect_options& connOpts_;
-  action_listener subListener_;
-  void reconnect() {
-    std::this_thread::sleep_for(std::chrono::milliseconds(2500));
-    try {
-      cli_.connect(connOpts_, nullptr, *this);
-    }
-    catch (const mqtt::exception& exc) {
-      std::cerr << "Error: " << exc.what() << std::endl;
-      exit(1);
-    }
-  }
-
-  void on_failure(const mqtt::token& tok) override {
-    std::cout << "Connection failed" << std::endl;
-    if (++nretry_ > N_RETRY_ATTEMPTS)
-      exit(1);
-    reconnect();
-  }
-
-  void on_success(const mqtt::token& tok) override {
-    std::cout << "\nConnection success" << std::endl;
-    std::cout << "\nSubscribing to topic '" << TOPIC << "'\n"
-      << "\tfor client " << CLIENT_ID
-      << " using QoS" << QOS << "\n"
-      << "\nPress Q<Enter> to quit\n" << std::endl;
-    cli_.subscribe(TOPIC, QOS, nullptr, subListener_);
-  }
-
-  void connection_lost(const std::string& cause) override {
-    std::cout << "\nConnection lost" << std::endl;
-    if (!cause.empty())
-      std::cout << "\tcause: " << cause << std::endl;
-
-    std::cout << "Reconnecting..." << std::endl;
-    nretry_ = 0;
-    reconnect();
-  }
-
-  void message_arrived(mqtt::const_message_ptr msg) override {
-    std::cout << "Message arrived" << std::endl;
-    std::cout << "\ttopic: '" << msg->get_topic() << "'" << std::endl;
-    std::cout << "\tpayload: '" << msg->to_string() << "'\n" << std::endl;
-    if(msg->get_topic().compare("web/insert") == 0){
-      ObjectRTree obj = convertJSONtoObject(msg->to_string());
-      tree.Updatetree(obj.rect.min, obj.rect.max, obj.order);
-      string payload = convertRegionsToJSON(data_tree);
-      cout << payload << endl;
-      //mqttPublish("cpp/insert", payload);
-    } else if(msg->get_topic().compare("web/knn") == 0){
-      // llamar knn y generar el payload
-      string payload;
-      mqttPublish("cpp/knn", payload);
-    } else if(msg->get_topic().compare("web/search") == 0){
-      // llamar search, generar el payload
-      string payload;
-      mqttPublish("cpp/search", payload);
-    } else if(msg->get_topic().compare("web/reset") == 0){
-      tree.RemoveAll();
-      data_tree.clear();
-    }
-  }
-
-  void delivery_complete(mqtt::delivery_token_ptr token) override {}
-
-public:
-  callback(mqtt::async_client& cli, mqtt::connect_options& connOpts)
-        : nretry_(0), cli_(cli), connOpts_(connOpts), subListener_("Subscription") {}
-};
-
 int mqttSubscribe(){
-  mqtt::connect_options connOpts;
-  connOpts.set_keep_alive_interval(20);
-  connOpts.set_clean_session(true);
+  string address = SERVER_ADDRESS;
 
-  mqtt::async_client client(SERVER_ADDRESS, CLIENT_ID);
+	mqtt::connect_options connOpts;
+	connOpts.set_keep_alive_interval(20);
+	connOpts.set_clean_session(true);
 
-  callback cb(client, connOpts);
-  client.set_callback(cb);
+	mqtt::async_client cli(SERVER_ADDRESS, CLIENT_ID);
 
-  try {
-    cout << "Connecting to the MQTT server..." << flush;
-    client.connect(connOpts, nullptr, cb);
-  }
-  catch (const mqtt::exception&) {
-    cerr << "\nERROR: Unable to connect to MQTT server: '" << SERVER_ADDRESS << "'" << endl;
-    return 1;
-  }
-  
-  while (tolower(cin.get()) != 'q'){}
+	try {
+		cout << "Connecting to the MQTT server..." << flush;
+		cli.connect(connOpts)->wait();
+		cli.start_consuming();
+		cli.subscribe(TOPIC, QOS)->wait();
+		cout << "OK" << endl;
 
-  try {
-    cout << "\nDisconnecting from the MQTT server..." << flush;
-    client.disconnect()->wait();
-    cout << "OK" << endl;
-  }
-  catch (const mqtt::exception& exc) {
-    cerr << exc.what() << endl;
-    return 1;
-  }
-  return 0;
+		// Consume messages
+
+		while (true) {
+			auto msg = cli.consume_message();
+			if (!msg) break;
+			cout << "Message received:" << endl;
+			cout << msg->get_topic() << ": " << msg->to_string() << endl;
+			if(msg->get_topic().compare("web/insert") == 0){
+        ObjectRTree obj = convertJSONtoObject(msg->to_string());
+        tree.Updatetree(obj.rect.min, obj.rect.max, obj.order);
+        string payload = convertRegionsToJSON(data_tree, export_aux+1);
+        mqttPublish("cpp/insert", payload);
+      } else if(msg->get_topic().compare("web/knn") == 0){
+        // llamar knn y generar el payload
+        string payload;
+        mqttPublish("cpp/knn", payload);
+      } else if(msg->get_topic().compare("web/search") == 0){
+        // llamar search, generar el payload
+        string payload;
+        mqttPublish("cpp/search", payload);
+      } else if(msg->get_topic().compare("web/reset") == 0){
+        tree.RemoveAll();
+        data_tree.clear();
+      }
+		}
+
+		// Disconnect
+
+		cout << "\nShutting down and disconnecting from the MQTT server..." << flush;
+		cli.unsubscribe(TOPIC)->wait();
+		cli.stop_consuming();
+		cli.disconnect()->wait();
+		cout << "OK" << endl;
+	}
+	catch (const mqtt::exception& exc) {
+		cerr << exc.what() << endl;
+		return 1;
+	}
+
+ 	return 0;
 }

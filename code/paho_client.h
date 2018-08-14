@@ -87,7 +87,6 @@ int mqttSubscribe(){
         string payload;
         mqttPublish("cpp/knn", payload);
       } else if(msg->get_topic().compare("web/search") == 0){
-        // llamar search, generar el payload
         Rect search_rect = convertJSONToIDs(msg->to_string());
         tree.Search(search_rect.min, search_rect.max, MySearchCallback);
         string payload = convertIDsToJSON(search_export);

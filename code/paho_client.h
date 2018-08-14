@@ -6,12 +6,18 @@ const string SERVER_ADDRESS("tcp://r-tree.nezads.com:1883");
 const string CLIENT_ID("console_client");
 const string TOPIC("web/#");
 
-const int QOS = 1;
+const int QOS = 0;
 const int N_RETRY_ATTEMPTS = 5;
 const int MAX_BUFFERED_MSGS = 120;
 const auto PERIOD = seconds(5);
 const string PERSIST_DIR { "data-persist" };
 
+//
+// RTree.h
+//
+
+typedef RTree<ValueType, ValueType, 2, float> MyTree;
+MyTree tree;
 
 int mqttPublish(string TOPIC, string payload) {
 	string address = SERVER_ADDRESS;
@@ -23,7 +29,7 @@ int mqttPublish(string TOPIC, string payload) {
 	connOpts.set_clean_session(true);
 	connOpts.set_automatic_reconnect(true);
 
-	mqtt::topic top(cli, TOPIC, QOS, true);
+	mqtt::topic top(cli, TOPIC, QOS, false);
 
 	try {
 		cout << "Connecting to server '" << address << "'..." << flush;
@@ -117,17 +123,23 @@ class callback : public virtual mqtt::callback, public virtual mqtt::iaction_lis
     std::cout << "Message arrived" << std::endl;
     std::cout << "\ttopic: '" << msg->get_topic() << "'" << std::endl;
     std::cout << "\tpayload: '" << msg->to_string() << "'\n" << std::endl;
-    string payload;
     if(msg->get_topic().compare("web/insert") == 0){
       ObjectRTree obj = convertJSONtoObject(msg->to_string());
-      payload = convertRegionsToJSON(data_tree);
-      mqttPublish("cpp/insert", payload);
+      tree.Updatetree(obj.rect.min, obj.rect.max, obj.order);
+      string payload = convertRegionsToJSON(data_tree);
+      cout << payload << endl;
+      //mqttPublish("cpp/insert", payload);
     } else if(msg->get_topic().compare("web/knn") == 0){
       // llamar knn y generar el payload
+      string payload;
       mqttPublish("cpp/knn", payload);
     } else if(msg->get_topic().compare("web/search") == 0){
       // llamar search, generar el payload
+      string payload;
       mqttPublish("cpp/search", payload);
+    } else if(msg->get_topic().compare("web/reset") == 0){
+      tree.RemoveAll();
+      data_tree.clear();
     }
   }
 
@@ -156,7 +168,7 @@ int mqttSubscribe(){
     cerr << "\nERROR: Unable to connect to MQTT server: '" << SERVER_ADDRESS << "'" << endl;
     return 1;
   }
-
+  
   while (tolower(cin.get()) != 'q'){}
 
   try {

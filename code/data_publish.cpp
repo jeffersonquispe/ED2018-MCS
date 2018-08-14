@@ -22,5 +22,5 @@ int main(int argc, char* argv[]) {
   
   cout << a.order << " " << a.rect.min[0] << " " << a.rect.min[1] << " " << a.rect.max[0] << " " << a.rect.max[1] << endl;
   
-  }while( mqttPublish("web/rand", payload) == 0);
+  }while( mqttPublish("cpp/insert", payload) == 0);
 }

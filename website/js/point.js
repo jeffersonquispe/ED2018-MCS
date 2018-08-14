@@ -57,5 +57,5 @@ prototypefabric.point = {
 
 
 function setText(points1,points2) {
-    prototypefabric.point.points = [points1, points2]
+    prototypefabric.point.points = [parseInt(points1), parseInt(points2)]
 };

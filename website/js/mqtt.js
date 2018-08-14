@@ -59,12 +59,12 @@ function NewWebAppClient(idClient, userClient, topic){
     onSuccessConnect()
     mqttSubscribe(client,topic);
   }
-  
   return [client,options];
 }
 
 function mqttPublish(mqttClient, topic, payload) {
-  var message = new Paho.MQTT.Message(payload);
+  var jsonString = JSON.stringify(payload);
+  var message = new Paho.MQTT.Message(jsonString);
   message.destinationName = topic;
   message.qos = brokerInfo.qos;
   mqttClient.send(message);
@@ -74,21 +74,18 @@ function mqttSubscribe(mqttClient, topic){
   mqttClient.subscribe(topic, {qos:brokerInfo.qos})
 }
  
- // https://github.com/mqttjs/MQTT.js
- // bower install angular-mqtt --save
+function Reset(){
+  location.href='/';
+  mqttPublish(local_clientMQTTPaho, "web/reset", "reset")
+}
+ 
 var mqttclient = NewWebAppClient(brokerInfo.clientIdFree, "", "cpp/#");
 var mqttoptions = mqttclient[1];
 var local_clientMQTTPaho = mqttclient[0];
 local_clientMQTTPaho.connect(mqttoptions);
 
 local_clientMQTTPaho.onMessageArrived = function (message) {
-  console.log(message.destinationName);
-  console.log(message.payloadString);
-  
-  var jsonString = JSON.stringify(message.payloadString);
   var obj = JSON.parse(message.payloadString);
-  console.log(obj)
-  
   if(message.destinationName == "cpp/insert"){
     dibujarMBR(obj)
   } else if(message.destinationName == "cpp/knn"){

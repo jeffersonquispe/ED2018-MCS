@@ -82,8 +82,7 @@ bool MySearchCallback(ValueType id){
 
 class RTFileStream;  // File I/O helper class, look below for implementation and notes.
 
-template<class DATATYPE, class ELEMTYPE, int NUMDIMS,
-         class ELEMTYPEREAL = ELEMTYPE, int TMAXNODES = 4, int TMINNODES = TMAXNODES / 2>
+template<class DATATYPE, class ELEMTYPE, int NUMDIMS, class ELEMTYPEREAL = ELEMTYPE, int TMAXNODES=4, int TMINNODES = TMAXNODES/2>
 class RTree
 {
 protected:
@@ -533,44 +532,63 @@ RTREE_TEMPLATE
 void RTREE_QUAL::read_MBR_tree(Node *p_node){
   ASSERT(p_node);
   ASSERT(p_node->m_level >= 0);
-
-  for(int index=0; index < p_node->m_count; index++)///////////////////////////////////////////////
-  {
-    //cout<<"Acceso a nivel: "<<p_node->m_level<<", NE: "<<p_node->m_count<<endl;
-    //cout<<"--------------------------------"<<endl;
-    //cout<<"minx,miny,maxx,maxy: [ ";
+  cout<<"EXPORT_AUX= "<<export_aux<<", level = "<<p_node->m_level<<endl;
+  if (export_aux==-1) {
+    cout<<"GENERANDO MBR NODO RAIZ"<<endl;
+    //PLOTEO DE NODO RAIZ
     export_aux++;
     data_tree.push_back(data_node());
+    data_tree[export_aux].leaf=false;
+    data_tree[export_aux].nivel_data=p_node->m_level+1;
     for(int axis=0; axis<NUMDIMS; ++axis)
     {
-      data_tree[export_aux].limits[2*axis]=p_node->m_branch[index].m_rect.m_min[axis];
-      //cout<<data_tree[export_aux].limits[2*axis]<<" ";
-
-      data_tree[export_aux].limits[2*axis+1]=p_node->m_branch[index].m_rect.m_max[axis];
-      //cout<<data_tree[export_aux].limits[2*axis+1]<<" ";
+      data_tree[0].limits[2*axis]=p_node->m_branch[0].m_rect.m_min[axis];
+      data_tree[0].limits[2*axis+1]=p_node->m_branch[0].m_rect.m_max[axis];
     }
-    //cout<<"]"<<endl;
-
-    if(p_node->m_level == 0)
+    for(int index=1; index < p_node->m_count; index++)///////////////////////////////////////////////
     {
-      data_tree[export_aux].leaf=true;
-      data_tree[export_aux].nivel_data=p_node->m_level;
-      //cout<<"export_aux_LEAF = "<<export_aux<<endl;
+      for(int axis=0; axis<NUMDIMS; ++axis)
+      {
+        if (data_tree[export_aux].limits[2*axis]>p_node->m_branch[index].m_rect.m_min[axis]) {
+          data_tree[export_aux].limits[2*axis]=p_node->m_branch[index].m_rect.m_min[axis];
+        }
+        if (data_tree[export_aux].limits[2*axis+1]<p_node->m_branch[index].m_rect.m_max[axis]) {
+          data_tree[export_aux].limits[2*axis+1]=p_node->m_branch[index].m_rect.m_max[axis];
+        }
+      }
     }
-    else if (p_node->m_level > 0) {
-      data_tree[export_aux].leaf=false;
-      data_tree[export_aux].nivel_data=p_node->m_level;
-      //cout<<"export_aux_BRANCH = "<<export_aux<<endl;
-      read_MBR_tree(p_node->m_branch[index].m_child);
-      //cout<<"Hoja id: "<<data_tree[export_aux].nivel_data<<endl;
-    }
-    else{
-      //cout<<"BUSQUEDA EN NIVEL INVALIDO"<<endl;
-    }
-
+    read_MBR_tree(p_node);
   }
+  else{
+    if (p_node->m_level > 0) {
 
+      for(int index=0; index < p_node->m_count; index++)///////////////////////////////////////////////
+      {
+        //cout<<"Acceso a nivel: "<<p_node->m_level<<", NE: "<<p_node->m_count<<endl;
+        //cout<<"--------------------------------"<<endl;
+        //cout<<"minx,miny,maxx,maxy: [ ";
+        export_aux++;
+        data_tree.push_back(data_node());
+        for(int axis=0; axis<NUMDIMS; ++axis)
+        {
+          data_tree[export_aux].limits[2*axis]=p_node->m_branch[index].m_rect.m_min[axis];
+          //cout<<data_tree[export_aux].limits[2*axis]<<" ";
+
+          data_tree[export_aux].limits[2*axis+1]=p_node->m_branch[index].m_rect.m_max[axis];
+          //cout<<data_tree[export_aux].limits[2*axis+1]<<" ";
+        }
+        //data_tree[export_aux].tag="R"+to_string(p_node->m_level)+"_"+to_string(index);
+        //cout<<"]"<<endl;
+
+        data_tree[export_aux].leaf=false;
+        data_tree[export_aux].nivel_data=p_node->m_level;
+        //cout<<"export_aux_BRANCH = "<<export_aux<<endl;
+        read_MBR_tree(p_node->m_branch[index].m_child);
+      }
+    }
+  }
 }
+
 
 RTREE_TEMPLATE
 void RTREE_QUAL::get_tags(){

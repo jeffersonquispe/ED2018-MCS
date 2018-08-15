@@ -2,136 +2,50 @@ var min = 99;
 var max = 999999;
 var polygonMode = false;
 var pointMode = false;
-var rectMode = false;
+var rangeSearchMode = false;
+var knnSearchMode = false;
 var pointArray = new Array();
 var lineArray = new Array();
 var activeLine;
-var activeShape = false;
+var activeShape;
 var canvas;
-var data1=200;
-var data2=100;
-var count=0;
 var poligonos = [];
+var polyToRender = [];
 var polCount = 0;
-var minmaxPoints;
 var rect, isDown, origX, origY;//para el rectangulo
-var idRect=0;//idRect
+var idRect=0;
+var RSxmin, RSymin, RSxmax, RSymax;
+var knnIsCheck = document.getElementById("knn-search");
 
-$('#k').click(function(){
-        data1 = document.getElementsByName("data1")[0].value;
-});
-
-//________________Rectangulo____________________
-/*$('#create-rect2').click(function(){
-    var Iden=0;
-    canvas.on('mouse:down', function(o){
-    isDown = true;
-    var pointer = canvas.getPointer(o.e);
-    origX = pointer.x;
-    origY = pointer.y;
-    var pointer = canvas.getPointer(o.e);
-    rect = new fabric.Rect({
-        left: origX,
-        top: origY,
-        originX: 'left',
-        originY: 'top',
-        width: pointer.x-origX,
-        height: pointer.y-origY,
-        angle: 0,
-        fill: 'transparent',
-         strokeWidth: 2,
-         strokeDashArray: [10, 5],
-         stroke: 'black'
-    });
-    var text = new fabric.Text('B', {
-        fontSize: 20,
-        left: origX,
-        top: origY,
-        originX: 'left',
-        originY: 'top',
-        width: pointer.x-origX,
-        height: pointer.y-origY,   
-    });
-    var group = new fabric.Group([ rect, text ], {
-      left: origX,
-      top: origY,
-      id: Iden
-    });
-    canvas.add(group);
-});*/
-
-$('#create-rect2').click(function(){
-  canvas.on('mouse:down', function(o){
-  isDown = true;
-  var pointer = canvas.getPointer(o.e);
-  origX = pointer.x;
-  origY = pointer.y;
-  var pointer = canvas.getPointer(o.e);
-  rect = new fabric.Rect({
-    left: origX,
-    top: origY,
-    originX: 'left',
-    originY: 'top',
-    width: pointer.x-origX,
-    height: pointer.y-origY,
-    angle: 0,
-    evented: false,
-    fill: 'transparent',
-     strokeWidth: 2,
-     strokeDashArray: [10, 5],
-     stroke: 'black',
-     id:idRect //para borrar rect
-  });
-  canvas.add(rect);
-      count++;
-});
-
-canvas.on('mouse:move', function(o){
-  if (!isDown) return;
-  var pointer = canvas.getPointer(o.e);
-  if(origX>pointer.x){
-    rect.set({ left: Math.abs(pointer.x) });
-  }
-  if(origY>pointer.y){
-    rect.set({ top: Math.abs(pointer.y) });
-  }
-  rect.set({ width: Math.abs(origX - pointer.x) });
-  rect.set({ height: Math.abs(origY - pointer.y) });
-     text.id=1;
-  Iden=group.get('id');
-      alert(Iden);
-  canvas.renderAll();
-});
-
-
-canvas.on('mouse:up', function(o){
-  isDown = false;
-  if(idRect===0){
-    idRect++;
-  }else{
-    canvas.remove(canvas.getObjects()[0]);
-    idRect++;
-  }
-});
-
-});
 //------------------------------------------------------------
 $(window).load(function(){
   prototypefabric.initCanvas();
   $('#create-polygon').click(function() {
     polygonMode = true;
     pointMode = false;
+    rangeSearchMode = false;
+    knnSearchMode = false;
     prototypefabric.polygon.drawPolygon();
   });
  $('#create-point').click(function() {
     polygonMode = false;
     pointMode = true;
+    rangeSearchMode = false;
+    knnSearchMode = false;
     prototypefabric.point.drawPoint();
   });
- $('#create-rect').click(function() {
-  alert("crear punto");
-  prototypefabric.rect1.drawRect1(); 
-    alert("crear punto2");
+ $('#range-search').click(function() {
+    polygonMode = false;
+    pointMode = false;
+    rangeSearchMode = true;
+    knnSearchMode = false;
+    RepaintPoly();
+  });
+  $('#knn-search').click(function(){
+    polygonMode = false;
+    pointMode = false;
+    rangeSearchMode = false;
+    knnSearchMode = true;
   });
 });
 
@@ -146,8 +60,7 @@ var prototypefabric = new function(){
       if(options.target && options.target.id == pointArray[0].id){
         prototypefabric.polygon.generatePolygon(pointArray);
         poligonos[polCount] = prototypefabric.polygon.polygonPoints;
-        console.log(prototypefabric.polygon.polygonPoints)
-        minmaxPoints = minmax_pol(prototypefabric.polygon.polygonPoints)
+        var minmaxPoints = minmax_pol(prototypefabric.polygon.polygonPoints)
         var toSend = {
           order: polCount,
           minP: [minmaxPoints[0][0], minmaxPoints[0][1]],
@@ -161,10 +74,18 @@ var prototypefabric = new function(){
       if(polygonMode){
         prototypefabric.polygon.addPoint(options);
       }
+      if(knnSearchMode && knnIsCheck.checked){
+        var knn = document.getElementsByName("quantity")[0].value;
+        var toSend = {
+          x: parseInt(canvas.getPointer().x),
+          y: parseInt(canvas.getPointer().y),
+          k: parseInt(knn),
+        }
+        mqttPublish(local_clientMQTTPaho, "web/knn", toSend)
+      }
       if(pointMode){
         prototypefabric.point.addPoint(options);
         poligonos[polCount] = prototypefabric.point.points;
-        console.log(prototypefabric.point.points)
         var toSend = {
           order: polCount,
           minP: [prototypefabric.point.points[0], prototypefabric.point.points[1]],
@@ -174,58 +95,121 @@ var prototypefabric = new function(){
         prototypefabric.point.points = [];
         polCount++;
       }
-      if(rectMode){
-        prototypefabric.rect.addRect(options);
+      if(rangeSearchMode){
+        isDown = true;
+        var pointer = canvas.getPointer(options.e);
+        origX = pointer.x;
+        origY = pointer.y;
+        var pointer = canvas.getPointer(options.e);
+        rect1 = new fabric.Rect({
+          left: origX,
+          top: origY,
+          originX: 'left',
+          originY: 'top',
+          width: pointer.x-origX,
+          height: pointer.y-origY,
+          angle: 0,
+          evented: false,
+          fill: 'transparent',
+          strokeWidth: 2,
+          strokeDashArray: [10, 5],
+          stroke: 'black',
+          id:idRect //para borrar rect
+        });
+        canvas.add(rect1);
       }
     });
 
     canvas.on('mouse:up', function (options) {
-
+      if(rangeSearchMode){
+        isDown = false;
+        if(idRect===0){
+          idRect++;
+        }else{
+          if(canvas.getObjects()[idRect].type==="rect"){
+            canvas.remove(canvas.getObjects()[0]);
+          }
+        }
+        RSxmin = parseInt(origX);
+        RSymin = parseInt(origY);
+        
+        if(RSxmin > RSxmax){
+          var temp = RSxmin
+          RSxmin = RSxmax
+          RSxmax = temp
+        }
+        if(RSymin > RSymax){
+          var temp = RSymin
+          RSymin = RSymax
+          RSymax = temp
+        }
+        var toSend={
+          minP:[RSxmin, RSymin],
+          maxP:[RSxmax, RSymax],
+        }
+        mqttPublish(local_clientMQTTPaho, "web/search", toSend)
+        rangeSearchMode = false;
+      }
     });
     canvas.on('mouse:move', function (options) {
-        if(activeLine && activeLine.class == "line"){
-          var pointer = canvas.getPointer(options.e);
-          activeLine.set({ x2: pointer.x, y2: pointer.y });
-
-          var points = activeShape.get("points");
-          points[pointArray.length] = {
-            x:pointer.x,
-            y:pointer.y
-          }
-          activeShape.set({
-            points: points
-          });
-          canvas.renderAll();
+      if(rangeSearchMode){
+        if (!isDown) return;
+        var pointer = canvas.getPointer(options.e);
+        if(origX>pointer.x){
+          rect1.set({ left: Math.abs(pointer.x) });
         }
-        //------desactiva los  objetos para editarse-----
-        canvas.deactivateAll();
-        canvas.selection = false;
-        canvas.forEachObject(function(o) {
-        o.selectable = false;
-         });
-       //------------------------------------------------- 
+        if(origY>pointer.y){
+          rect1.set({ top: Math.abs(pointer.y) });
+        }
+        rect1.set({ width: Math.abs(origX - pointer.x) });
+        rect1.set({ height: Math.abs(origY - pointer.y) });
         canvas.renderAll();
+        RSxmax = parseInt(pointer.x);
+        RSymax = parseInt(pointer.y);
+      }
+      if(activeLine && activeLine.class == "line"){
+        var pointer = canvas.getPointer(options.e);
+        activeLine.set({ x2: pointer.x, y2: pointer.y });
+
+        var points = activeShape.get("points");
+        points[pointArray.length] = {
+          x:pointer.x,
+          y:pointer.y
+        }
+        activeShape.set({
+          points: points
+        });
+        canvas.renderAll();
+      }
+      //------desactiva los  objetos para editarse-----
+      canvas.deactivateAll();
+      canvas.selection = false;
+      canvas.forEachObject(function(o) {
+      o.selectable = false;
+       });
+     //------------------------------------------------- 
+      canvas.renderAll();
     });
   };
 };
 
 function deleteObjects(){
-    var activeObject = canvas.getActiveObject(),
-    activeGroup = canvas.getActiveGroup();
-    if (activeObject) {
-      if (confirm('Are you sure?')) {
-        canvas.remove(activeObject);
-      }
+  var activeObject = canvas.getActiveObject(),
+  activeGroup = canvas.getActiveGroup();
+  if (activeObject) {
+    if (confirm('Are you sure?')) {
+      canvas.remove(activeObject);
     }
-    else if (activeGroup) {
-      if (confirm('Are you sure?')) {
-        var objectsInGroup = activeGroup.getObjects();
-        canvas.discardActiveGroup();
-        objectsInGroup.forEach(function(object) {
-        canvas.remove(object);
-        });
-      }
+  }
+  else if (activeGroup) {
+    if (confirm('Are you sure?')) {
+      var objectsInGroup = activeGroup.getObjects();
+      canvas.discardActiveGroup();
+      objectsInGroup.forEach(function(object) {
+      canvas.remove(object);
+      });
     }
+  }
 };
 
 function resize() {
@@ -249,8 +233,20 @@ function resize() {
 window.addEventListener('load', resize, false);
 window.addEventListener('resize', resize, false);
 
+function RepaintCanvas(){
+  canvas.clear();
+  RepaintPoly();
+}
+
+function RepaintPoly(){
+  for (var i = 0; i < polyToRender.length ; i++) {
+    canvas.add(polyToRender[i].setColor("red"))
+  }
+}
+
 function dibujarMBR(regiones){
-  var color="blslue";
+  var color="blue";
+  RepaintCanvas()
   for (var i = 0; i < regiones.length ; i++) {
     if( i>0 && parseInt(regiones[i].nivel) != parseInt(regiones[i-1].nivel)){
       color=getRandomColor();
@@ -287,7 +283,7 @@ function dibujarMBR(regiones){
 
 function pintarEncontrados(Ids){
   for (var i = 0; i < Ids.length ; i++) {
-    console.log(poligonos[i])
+    polyToRender[parseInt(Ids[i])].setColor("yellow")
   }
 }
 
@@ -321,3 +317,12 @@ function minmax_pol(pol){
   return [min, max]
 }
 
+function showKNNOptions() {
+  var a = document.getElementById("i2");
+  var e = document.getElementById("esc");
+  if (knnIsCheck.checked){
+    e.style.display = "block";
+  } else {
+    e.style.display = "none";
+  }
+}

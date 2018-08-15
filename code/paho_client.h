@@ -1,8 +1,8 @@
 #include "mqtt/async_client.h"
 #include "boost_ptree.h"
 
-const string SERVER_ADDRESS("tcp://localhost:1883");
-//const string SERVER_ADDRESS("tcp://r-tree.nezads.com:1883");
+//const string SERVER_ADDRESS("tcp://localhost:1883");
+const string SERVER_ADDRESS("tcp://r-tree.nezads.com:1883");
 const string CLIENT_ID("console_client");
 const string TOPIC("web/#");
 
@@ -84,8 +84,8 @@ int mqttSubscribe(){
         mqttPublish("cpp/insert", payload);
       } else if(msg->get_topic().compare("web/knn") == 0){
         // llamar knn y generar el payload
-        string payload;
-        mqttPublish("cpp/knn", payload);
+        //string payload;
+        //mqttPublish("cpp/knn", payload);
       } else if(msg->get_topic().compare("web/search") == 0){
         Rect search_rect = convertJSONToIDs(msg->to_string());
         tree.Search(search_rect.min, search_rect.max, MySearchCallback);

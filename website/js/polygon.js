@@ -113,6 +113,7 @@ prototypefabric.polygon = {
             hasControls: false
         });
         canvas.add(polygon);
+        polyToRender[polCount] = polygon
         activeLine = null;
         activeShape = null;
         polygonMode = false;

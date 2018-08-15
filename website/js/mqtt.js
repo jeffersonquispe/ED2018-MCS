@@ -5,7 +5,7 @@ var brokerInfo = {
   clientId     : "IdClient_WebApp",
   clientIdFree : "IdClient_WebAppFree",
   userWeb      : "Master",
-  url          : "r-tree.nezads.com"
+  url          : "localhost"
 }
 
 function onSuccessConnect(){
@@ -63,6 +63,7 @@ function NewWebAppClient(idClient, userClient, topic){
 }
 
 function mqttPublish(mqttClient, topic, payload) {
+  console.log(payload)
   var jsonString = JSON.stringify(payload);
   var message = new Paho.MQTT.Message(jsonString);
   message.destinationName = topic;
@@ -91,8 +92,8 @@ local_clientMQTTPaho.onMessageArrived = function (message) {
   if(message.destinationName == "cpp/insert"){
     dibujarMBR(obj.data)
   } else if(message.destinationName == "cpp/knn"){
-    //pintarEncontrados(obj.data) = [0, 5, 8, 6]
+    //pintarEncontrados(obj.data)
   } else if(message.destinationName == "cpp/search"){
-    // pinta los poligonos que esten en el rectangulo
+    pintarEncontrados(obj.data)
   }
 };

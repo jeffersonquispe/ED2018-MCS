@@ -96,5 +96,11 @@ local_clientMQTTPaho.onMessageArrived = function (message) {
     enlazarEncontrados(obj)
   } else if(message.destinationName == "cpp/search"){
     pintarEncontrados(obj.data)
+  } else if(message.destinationName == "cpp/reset"){
+    poligonos = [];
+    polyToRender = [];
+    polCount = 0;
+    MBR = [];
+    RepaintCanvas(MBR);
   }
 };

@@ -318,7 +318,6 @@ function minmax_pol(pol){
 }
 
 function showKNNOptions() {
-  var a = document.getElementById("i2");
   var e = document.getElementById("esc");
   if (knnIsCheck.checked){
     e.style.display = "block";

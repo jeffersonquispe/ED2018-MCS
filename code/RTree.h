@@ -1544,17 +1544,6 @@ bool RTREE_QUAL::Search_1(Node* a_node, Rect* a_rect, int& a_foundCount, std::fu
 }
 
 RTREE_TEMPLATE
-void RTREE_QUAL::Search_knn(const ELEMTYPE a_point[NUMDIMS], int a_k){
-  search_knn_export.clear();
-  NearRect* nearest_rects = new NearRect[a_k];
-  Search_nn(a_point, m_root, nearest_rects, a_k);
-  for(int i=0; i<a_k; ++i){
-    search_knn_export.push_back(nearest_rects[i].m_data);
-  }
-  return;
-}
-
-RTREE_TEMPLATE
 bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::function<bool (const DATATYPE&)> callback) const
 {
   ASSERT(a_node);
@@ -1594,6 +1583,17 @@ bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::func
   }
 
   return true; // Continue searching
+}
+
+RTREE_TEMPLATE
+void RTREE_QUAL::Search_knn(const ELEMTYPE a_point[NUMDIMS], int a_k){
+  search_knn_export.clear();
+  NearRect* nearest_rects = new NearRect[a_k];
+  Search_nn(a_point, m_root, nearest_rects, a_k);
+  for(int i=0; i<a_k; ++i){
+    search_knn_export.push_back(nearest_rects[i].m_data);
+  }
+  return;
 }
 
 RTREE_TEMPLATE

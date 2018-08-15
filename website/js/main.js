@@ -12,8 +12,7 @@ var canvas;
 var poligonos = [];
 var polyToRender = [];
 var polCount = 0;
-var rect, isDown, origX, origY;//para el rectangulo
-var idRect=0;
+var rect1, isDown, origX, origY;//para el rectangulo
 var RSxmin, RSymin, RSxmax, RSymax;
 var knnIsCheck = document.getElementById("knn-search");
 var colorFounded = "#2eb82e"
@@ -30,6 +29,7 @@ $(window).load(function(){
     prototypefabric.polygon.drawPolygon();
     knnIsCheck.checked = false;
     showKNNOptions()
+    RepaintCanvas(MBR);
   });
  $('#create-point').click(function() {
     polygonMode = false;
@@ -39,6 +39,7 @@ $(window).load(function(){
     prototypefabric.point.drawPoint();
     knnIsCheck.checked = false;
     showKNNOptions()
+    RepaintCanvas(MBR);
   });
  $('#range-search').click(function() {
     polygonMode = false;
@@ -91,7 +92,9 @@ var prototypefabric = new function(){
           k: parseInt(knn),
         }
         RepaintCanvas(MBR);
-        mqttPublish(local_clientMQTTPaho, "web/knn", toSend)
+        if(poligonos.length >0){
+          mqttPublish(local_clientMQTTPaho, "web/knn", toSend)
+        }
       }
       if(pointMode){
         prototypefabric.point.addPoint(options);
@@ -124,7 +127,6 @@ var prototypefabric = new function(){
           strokeWidth: 2,
           strokeDashArray: [10, 5],
           stroke: 'black',
-          id:idRect //para borrar rect
         });
         canvas.add(rect1);
       }
@@ -133,13 +135,6 @@ var prototypefabric = new function(){
     canvas.on('mouse:up', function (options) {
       if(rangeSearchMode){
         isDown = false;
-        if(idRect===0){
-          idRect++;
-        }else{
-          if(canvas.getObjects()[idRect].type==="rect"){
-            canvas.remove(canvas.getObjects()[0]);
-          }
-        }
         RSxmin = parseInt(origX);
         RSymin = parseInt(origY);
         
@@ -157,7 +152,9 @@ var prototypefabric = new function(){
           minP:[RSxmin, RSymin],
           maxP:[RSxmax, RSymax],
         }
-        mqttPublish(local_clientMQTTPaho, "web/search", toSend)
+        if(poligonos.length >0){
+          mqttPublish(local_clientMQTTPaho, "web/search", toSend)
+        }
         rangeSearchMode = false;
       }
     });
@@ -266,7 +263,7 @@ function dibujarMBR(regiones){
     var xmin=parseInt(regiones[i].minP[0]);
     var ymin=parseInt(regiones[i].minP[1]);
     var w=xmax-xmin;var h=ymax-ymin;
-    rect = new fabric.Rect({
+    canvas.add(new fabric.Rect({
       left: xmin,
       top: ymin,
       width: w,
@@ -277,9 +274,7 @@ function dibujarMBR(regiones){
        strokeWidth: 2,
        strokeDashArray: [10, 5],
        stroke: color
-     });
-
-    canvas.add(rect);
+     }));
 
     var text = new fabric.Text(regiones[i].tag, {
       fontSize: 15,

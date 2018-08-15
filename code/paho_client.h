@@ -1,8 +1,8 @@
 #include "mqtt/async_client.h"
 #include "boost_ptree.h"
 
-//const string SERVER_ADDRESS("tcp://localhost:1883");
-const string SERVER_ADDRESS("tcp://r-tree.nezads.com:1883");
+const string SERVER_ADDRESS("tcp://localhost:1883");
+//const string SERVER_ADDRESS("tcp://r-tree.nezads.com:1883");
 const string CLIENT_ID("console_client");
 const string TOPIC("web/#");
 

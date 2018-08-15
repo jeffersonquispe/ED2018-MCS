@@ -73,11 +73,11 @@ int mqttSubscribe(){
 		// Consume messages
 
 		while (true) {
-			auto msg = cli.consume_message();
-			if (!msg) break;
-			cout << "Message received:" << endl;
-			cout << msg->get_topic() << ": " << msg->to_string() << endl;
-			if(msg->get_topic().compare("web/insert") == 0){
+        auto msg = cli.consume_message();
+        //if (!msg) break;
+        cout << "Message received:" << endl;
+        cout << msg->get_topic() << ": " << msg->to_string() << endl;
+        if(msg->get_topic().compare("web/insert") == 0){
         ObjectRTree obj = convertJSONtoObject(msg->to_string());
         tree.Updatetree(obj.rect.min, obj.rect.max, obj.order);
         string payload = convertRegionsToJSON(data_tree, export_aux+1);

@@ -5,7 +5,7 @@ var brokerInfo = {
   clientId     : "IdClient_WebApp",
   clientIdFree : "IdClient_WebAppFree",
   userWeb      : "Master",
-  url          : "localhost"
+  url          : "r-tree.nezads.com"
 }
 
 function onSuccessConnect(){
@@ -92,7 +92,7 @@ local_clientMQTTPaho.onMessageArrived = function (message) {
   if(message.destinationName == "cpp/insert"){
     dibujarMBR(obj.data)
   } else if(message.destinationName == "cpp/knn"){
-    //pintarEncontrados(obj.data)
+    //enlazarEncontrados(obj.data)
   } else if(message.destinationName == "cpp/search"){
     pintarEncontrados(obj.data)
   }

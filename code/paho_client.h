@@ -95,6 +95,7 @@ int mqttSubscribe(){
       } else if(msg->get_topic().compare("web/reset") == 0){
         tree.RemoveAll();
         data_tree.clear();
+        mqttPublish("cpp/reset", "{\"message\":\"ok\"}");
       }
 		}
 

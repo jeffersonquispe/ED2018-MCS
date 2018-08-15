@@ -5,6 +5,7 @@ var brokerInfo = {
   clientId     : "IdClient_WebApp",
   clientIdFree : "IdClient_WebAppFree",
   userWeb      : "Master",
+  //url          : "localhost"
   url          : "r-tree.nezads.com"
 }
 
@@ -88,11 +89,11 @@ local_clientMQTTPaho.connect(mqttoptions);
 local_clientMQTTPaho.onMessageArrived = function (message) {
   console.log(message.payloadString)
   var obj = JSON.parse(message.payloadString);
-  console.log(obj.data)
   if(message.destinationName == "cpp/insert"){
-    dibujarMBR(obj.data)
+    MBR = obj.data
+    RepaintCanvas(obj.data)
   } else if(message.destinationName == "cpp/knn"){
-    //enlazarEncontrados(obj.data)
+    enlazarEncontrados(obj)
   } else if(message.destinationName == "cpp/search"){
     pintarEncontrados(obj.data)
   }

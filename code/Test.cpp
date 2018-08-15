@@ -1,9 +1,3 @@
-//
-// Test.cpp
-//
-// This is a direct port of the C version of the RTree test program.
-//
-
 #include <iostream>
 #include "RTree.h"
 
@@ -26,6 +20,8 @@ struct Rect rects[] =
 };
 
 int nrects = sizeof(rects) / sizeof(rects[0]);
+ValueType a_point[2];
+int a_k;
 
 struct Rect rects2[] =
 {
@@ -38,16 +34,9 @@ int nrects2 = sizeof(rects2) / sizeof(rects2[0]);
 Rect search_rect(4., 0., 11., 6.); // search will find above rects that this one overlaps
 
 
-bool MySearchCallback(ValueType id)
-
-{
-  cout << "Hit data rect " << id << "\n";
-  return true; // keep going
-}
-
 int main()
 {
-  typedef RTree<ValueType, ValueType, 2, float> MyTree;
+  typedef RTree<ValueType, ValueType, 2, float, 8> MyTree;
   MyTree tree;
 
   int i, nhits;
@@ -70,6 +59,18 @@ int main()
   nhits = tree.Search(search_rect.min, search_rect.max, MySearchCallback);
 
   cout << "Se encontraron " << nhits << " elementos.\n";
+
+  cout<< "Iniciando búsqueda KNN"<<endl;
+  cout<< "-----------------------"<<endl;
+  a_point[0]=1.25;
+  a_point[1]=6.5;
+  a_k=3;
+  tree.Search_knn(a_point, a_k);
+  for (int knn_aux = 0; knn_aux < search_knn_export.size(); knn_aux++) {
+    cout<<"Element A_k_"<<knn_aux<<" = "<<search_knn_export[knn_aux]<<endl;
+  }
+  cout << "Se encontraron " << search_knn_export.size() << " elementos.\n";
+
 /*
   tree.RemoveAll();
   cout<<"RESETEANDO ARBOL"<<endl;
@@ -81,12 +82,11 @@ int main()
     tree.Updatetree(rects2[i].min, rects2[i].max, i); // Note, all values including zero are fine in this version
   }
 */
+/*
   cout<< "Iniciando búsqueda"<<endl;
   cout<< "------------------"<<endl;
-
   nhits = tree.Search(search_rect.min, search_rect.max, MySearchCallback);
-
-  cout << "Se encontraron " << nhits << " elementos.\n";
+  cout << "Se encontraron " << nhits << " elementos.\n";*/
   return 0;
 
 }

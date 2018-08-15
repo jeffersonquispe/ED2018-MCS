@@ -16,6 +16,8 @@ var rect, isDown, origX, origY;//para el rectangulo
 var idRect=0;
 var RSxmin, RSymin, RSxmax, RSymax;
 var knnIsCheck = document.getElementById("knn-search");
+var colorFounded = "#2eb82e"
+var MBR = [];
 
 //------------------------------------------------------------
 $(window).load(function(){
@@ -26,6 +28,8 @@ $(window).load(function(){
     rangeSearchMode = false;
     knnSearchMode = false;
     prototypefabric.polygon.drawPolygon();
+    knnIsCheck.checked = false;
+    showKNNOptions()
   });
  $('#create-point').click(function() {
     polygonMode = false;
@@ -33,19 +37,24 @@ $(window).load(function(){
     rangeSearchMode = false;
     knnSearchMode = false;
     prototypefabric.point.drawPoint();
+    knnIsCheck.checked = false;
+    showKNNOptions()
   });
  $('#range-search').click(function() {
     polygonMode = false;
     pointMode = false;
     rangeSearchMode = true;
     knnSearchMode = false;
-    RepaintPoly();
+    knnIsCheck.checked = false;
+    showKNNOptions()
+    RepaintCanvas(MBR);
   });
   $('#knn-search').click(function(){
     polygonMode = false;
     pointMode = false;
     rangeSearchMode = false;
     knnSearchMode = true;
+    RepaintCanvas(MBR);
   });
 });
 
@@ -81,6 +90,7 @@ var prototypefabric = new function(){
           y: parseInt(canvas.getPointer().y),
           k: parseInt(knn),
         }
+        RepaintCanvas(MBR);
         mqttPublish(local_clientMQTTPaho, "web/knn", toSend)
       }
       if(pointMode){
@@ -233,9 +243,10 @@ function resize() {
 window.addEventListener('load', resize, false);
 window.addEventListener('resize', resize, false);
 
-function RepaintCanvas(){
+function RepaintCanvas(regiones){
   canvas.clear();
   RepaintPoly();
+  dibujarMBR(regiones);
 }
 
 function RepaintPoly(){
@@ -246,7 +257,6 @@ function RepaintPoly(){
 
 function dibujarMBR(regiones){
   var color="blue";
-  RepaintCanvas()
   for (var i = 0; i < regiones.length ; i++) {
     if( i>0 && parseInt(regiones[i].nivel) != parseInt(regiones[i-1].nivel)){
       color=getRandomColor();
@@ -283,7 +293,28 @@ function dibujarMBR(regiones){
 
 function pintarEncontrados(Ids){
   for (var i = 0; i < Ids.length ; i++) {
-    polyToRender[parseInt(Ids[i])].setColor("yellow")
+    polyToRender[parseInt(Ids[i])].setColor(colorFounded)
+  }
+}
+
+function enlazarEncontrados(obj){
+  Ids = obj.data
+  x = obj.x
+  y = obj.y
+  for (var i = 0; i < Ids.length ; i++) {
+    polyToRender[parseInt(Ids[i])].setColor(colorFounded)
+    console.log(poligonos[parseInt(Ids[i])])
+    if(poligonos[parseInt(Ids[i])].length == 2){
+      canvas.add(new fabric.Line([x, y, poligonos[parseInt(Ids[i])][0], poligonos[parseInt(Ids[i])][1]], {
+        stroke:colorFounded,
+        strokeWidth:2,
+      }));
+    } else if(poligonos[parseInt(Ids[i])].length > 2){
+      canvas.add(new fabric.Line([x, y, poligonos[parseInt(Ids[i])][0][0], poligonos[parseInt(Ids[i])][0][1]], {
+        stroke:colorFounded,
+        strokeWidth:2,
+      }));
+    }
   }
 }
 

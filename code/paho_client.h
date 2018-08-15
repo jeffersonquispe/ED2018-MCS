@@ -83,9 +83,10 @@ int mqttSubscribe(){
         string payload = convertRegionsToJSON(data_tree, export_aux+1);
         mqttPublish("cpp/insert", payload);
       } else if(msg->get_topic().compare("web/knn") == 0){
-        // llamar knn y generar el payload
-        //string payload;
-        //mqttPublish("cpp/knn", payload);
+        ObjectKNN obj = convertJSONtoKNN(msg->to_string());
+        tree.Search_knn(obj.points, obj.k);
+        string payload = convertKNNToJSON(search_knn_export, obj.points[0], obj.points[1]);
+        mqttPublish("cpp/knn", payload);
       } else if(msg->get_topic().compare("web/search") == 0){
         Rect search_rect = convertJSONToIDs(msg->to_string());
         tree.Search(search_rect.min, search_rect.max, MySearchCallback);

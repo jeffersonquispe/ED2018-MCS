@@ -101,3 +101,32 @@ string convertIDsToJSON(vector<int> search_t){
   string output = toJSON.str();
   return output;
 }
+
+ObjectKNN convertJSONtoKNN(string input){
+  stringstream fromJSON;
+  fromJSON << input;
+  pt::ptree iroot;
+  pt::read_json(fromJSON, iroot);
+  ValueType x = iroot.get<ValueType>("x");
+  ValueType y = iroot.get<ValueType>("y");
+  int k = iroot.get<int>("k");
+  return ObjectKNN(x,y, k);
+}
+
+string convertKNNToJSON(vector<int> search_t, ValueType xpoint, ValueType ypoint){
+  stringstream toJSON;
+  int size = search_t.size();
+  pt::ptree oroot, data, element;
+  
+  for(int i=0; i<size;i++){
+    element.put<int>("", search_t[i]);
+    data.push_back(std::make_pair("", element));
+  }
+  oroot.add_child("data", data);
+  oroot.add("x", xpoint);
+  oroot.add("y", ypoint);
+  
+  pt::write_json(toJSON, oroot);
+  string output = toJSON.str();
+  return output;
+}

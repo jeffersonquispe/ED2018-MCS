@@ -79,7 +79,7 @@ vector<int> search_knn_export;
 int export_aux;
 
 bool MySearchCallback(ValueType id){
-  cout << "Hit data rect " << id << "\n";
+  //cout << "Hit data rect " << id << "\n";
   return true; // keep going
 }
 
@@ -419,9 +419,9 @@ RTREE_TEMPLATE
 void RTREE_QUAL::read_MBR_tree(Node *p_node){
   ASSERT(p_node);
   ASSERT(p_node->m_level >= 0);
-  cout<<"EXPORT_AUX= "<<export_aux<<", level = "<<p_node->m_level<<endl;
+  //cout<<"EXPORT_AUX= "<<export_aux<<", level = "<<p_node->m_level<<endl;
   if (export_aux==-1) {
-    cout<<"GENERANDO MBR NODO RAIZ"<<endl;
+    //cout<<"GENERANDO MBR NODO RAIZ"<<endl;
     //PLOTEO DE NODO RAIZ
     export_aux++;
     data_tree.push_back(data_node());
@@ -480,13 +480,13 @@ void RTREE_QUAL::read_MBR_tree(Node *p_node){
 RTREE_TEMPLATE
 void RTREE_QUAL::get_tags(){
    int tag_aux=0;
-  cout<<"M_ROOT LEVEL"<<m_root->m_level<<endl;
+  //cout<<"M_ROOT LEVEL"<<m_root->m_level<<endl;
   for (int i = m_root->m_level; i >-1; i--) {
-    cout<<"level: "<<i<<endl;
+    //cout<<"level: "<<i<<endl;
     for (int j = 0; j < export_aux+1; j++) {
       //cout<<"DATA_TREE LEVEL: "<<data_tree[j].nivel_data<<", j = "<<i<<endl;
       if (data_tree[j].nivel_data==i) {
-        cout<<"Tag_aux: "<<tag_aux<<", J= "<<j<<endl;
+        //cout<<"Tag_aux: "<<tag_aux<<", J= "<<j<<endl;
         data_tree[j].tag="R"+to_string(tag_aux);
         tag_aux++;
       }
@@ -505,7 +505,7 @@ void RTREE_QUAL::Updatetree(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[
 #endif //_DEBUG
 
   export_aux=-1;
-  cout<<"Insertando rectangulo "<<a_dataId+1<<" en arbol."<<endl;
+  //cout<<"Insertando rectangulo "<<a_dataId+1<<" en arbol."<<endl;
   Insert(a_min, a_max, a_dataId);
   //cout<<"Ploteando elementos:"<<endl;
   //cout<<"--------------------"<<endl;
@@ -514,24 +514,24 @@ void RTREE_QUAL::Updatetree(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[
   //cout<<"Elementos en root: "<<m_root->m_count<<endl;
   read_MBR_tree(m_root);
   get_tags();
-  cout<<"PLOTING EXPORT DATA"<<endl;
-  cout<<"N_MBR: "<<export_aux+1<<endl;
-  cout<<"-----------------------------------------"<<endl;
-  cout<<"-----------------------------------------"<<endl;
-  cout<<"-----------------------------------------"<<endl;
-  for (int i = 0; i < export_aux+1; i++) {
-    cout<<"MBR = [ ";
+  //cout<<"PLOTING EXPORT DATA"<<endl;
+  //cout<<"N_MBR: "<<export_aux+1<<endl;
+  //cout<<"-----------------------------------------"<<endl;
+  //cout<<"-----------------------------------------"<<endl;
+  //cout<<"-----------------------------------------"<<endl;
+  /*for (int i = 0; i < export_aux+1; i++) {
+    //cout<<"MBR = [ ";
     for (int j = 0; j < 4; j++) {
       cout << data_tree[i].limits[j] << " ";
     }
-    cout<<" ]"<<endl;
-    cout<<"Leaf: "<<data_tree[i].leaf<<endl;
-    cout<<"ID: "<<data_tree[i].nivel_data<<endl;
-    cout<<"Tag: "<<data_tree[i].tag<<endl;
-    cout<<"----------------------------------------"<<endl;
-    cout<<"----------------------------------------"<<endl;
-    cout<<"----------------------------------------"<<endl;
-  }
+    //cout<<" ]"<<endl;
+    //cout<<"Leaf: "<<data_tree[i].leaf<<endl;
+    //cout<<"ID: "<<data_tree[i].nivel_data<<endl;
+    //cout<<"Tag: "<<data_tree[i].tag<<endl;
+    //cout<<"----------------------------------------"<<endl;
+    //cout<<"----------------------------------------"<<endl;
+    //cout<<"----------------------------------------"<<endl;
+  }*/
 }
 
 RTREE_TEMPLATE
@@ -605,11 +605,11 @@ int RTREE_QUAL::Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDI
 
   int foundCount = 0;
   Search(m_root, &rect, foundCount, callback);
-  cout<<"Imprimiendo vector search: "<<endl;
-  cout<<"---------------------------"<<endl;
-  for (int i = 0; i < search_export.size(); i++) {
+  //cout<<"Imprimiendo vector search: "<<endl;
+  //cout<<"---------------------------"<<endl;
+  /*for (int i = 0; i < search_export.size(); i++) {
     cout<<"Elemento "<<i<<" con ID "<<search_export[i]<<endl;
-  }
+  }*/
 
   return foundCount;
 }
@@ -1314,12 +1314,12 @@ bool RTREE_QUAL::Cover_1(Rect* a_rectA, Rect* a_rectB) const
     }
   }
   if(aux){
-    cout<<"Elemento encontrado: [";
-    for(int index=0; index < NUMDIMS; ++index){
+    //cout<<"Elemento encontrado: [";
+    /*for(int index=0; index < NUMDIMS; ++index){
       cout<<a_rectB->m_min[index]<<" "<<a_rectB->m_max[index]<<" ";
 
-    }
-    std::cout<<"]"<<endl<<"---------------------------------------------"<<endl;
+    }*/
+    //std::cout<<"]"<<endl<<"---------------------------------------------"<<endl;
   }
   return aux;
 }
@@ -1340,14 +1340,14 @@ bool RTREE_QUAL::Cover(Rect* a_rectA, Branch* a_branch) const
     }
   }
   if(aux){
-    cout<<"Elemento encontrado: [";
+    //cout<<"Elemento encontrado: [";
     //search_export=
-    for(int index=0; index < NUMDIMS; ++index){
+    /*for(int index=0; index < NUMDIMS; ++index){
       cout<<a_rectB->m_min[index]<<" "<<a_rectB->m_max[index]<<" ";
-    }
-    std::cout<<"]"<<endl<<"---------------------------------------------"<<endl;
+    }*/
+    //std::cout<<"]"<<endl<<"---------------------------------------------"<<endl;
     search_export.push_back(a_branch->m_data);
-    cout<<"ID: "<<a_branch->m_data<<endl;
+    //cout<<"ID: "<<a_branch->m_data<<endl;
   }
   return aux;
 }

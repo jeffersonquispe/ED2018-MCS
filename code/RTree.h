@@ -130,13 +130,10 @@ public:
 
     ~Iterator()                                   { }
 
-    /// Is iterator invalid
     bool IsNull()                                 { return (m_tos <= 0); }
 
-    /// Is iterator pointing to valid data
     bool IsNotNull()                              { return (m_tos > 0); }
 
-    /// Access the current data element. Caller must be sure iterator is not NULL first.
     DATATYPE& operator*()
     {
       ASSERT(IsNotNull());
@@ -144,7 +141,6 @@ public:
       return curTos.m_node->m_branch[curTos.m_branchIndex].m_data;
     }
 
-    /// Access the current data element. Caller must be sure iterator is not NULL first.
     const DATATYPE& operator*() const
     {
       ASSERT(IsNotNull());
@@ -152,10 +148,8 @@ public:
       return curTos.m_node->m_branch[curTos.m_branchIndex].m_data;
     }
 
-    /// Find the next data element
     bool operator++()                             { return FindNextData(); }
 
-    /// Get the bounds for this node
     void GetBounds(ELEMTYPE a_min[NUMDIMS], ELEMTYPE a_max[NUMDIMS])
     {
       ASSERT(IsNotNull());
@@ -171,10 +165,8 @@ public:
 
   private:
 
-    /// Reset iterator
     void Init()                                   { m_tos = 0; }
 
-    /// Find the next data element in the tree (For internal use only)
     bool FindNextData()
     {
       for(;;)
@@ -183,32 +175,25 @@ public:
         {
           return false;
         }
-        StackElement curTos = Pop(); // Copy stack top cause it may change as we use it
+        StackElement curTos = Pop();
 
         if(curTos.m_node->IsLeaf())
         {
-          // Keep walking through data while we can
           if(curTos.m_branchIndex+1 < curTos.m_node->m_count)
           {
-            // There is more data, just point to the next one
             Push(curTos.m_node, curTos.m_branchIndex + 1);
             return true;
           }
-          // No more data, so it will fall back to previous level
         }
         else
         {
           if(curTos.m_branchIndex+1 < curTos.m_node->m_count)
           {
-            // Push sibling on for future tree walk
-            // This is the 'fall back' node when we finish with the current level
             Push(curTos.m_node, curTos.m_branchIndex + 1);
           }
-          // Since cur node is not a leaf, push first of next level to get deeper into the tree
           Node* nextLevelnode = curTos.m_node->m_branch[curTos.m_branchIndex].m_child;
           Push(nextLevelnode, 0);
 
-          // If we pushed on a new leaf, exit as the data is ready at TOS
           if(nextLevelnode->IsLeaf())
           {
             return true;
@@ -234,13 +219,12 @@ public:
       return m_stack[m_tos];
     }
 
-    StackElement m_stack[MAX_STACK];              ///< Stack as we are doing iteration instead of recursion
-    int m_tos;                                    ///< Top Of Stack index
+    StackElement m_stack[MAX_STACK]; 
+    int m_tos;                                 
 
-    friend class RTree; // Allow hiding of non-public functions while allowing manipulation by logical owner
+    friend class RTree; 
   };
 
-  /// Get 'first' for iteration
   void GetFirst(Iterator& a_it)
   {
     a_it.Init();
@@ -273,50 +257,47 @@ protected:
 
   struct Rect
   {
-    ELEMTYPE m_min[NUMDIMS];                      ///< Min dimensions of bounding box
-    ELEMTYPE m_max[NUMDIMS];                      ///< Max dimensions of bounding box
+    ELEMTYPE m_min[NUMDIMS];      
+    ELEMTYPE m_max[NUMDIMS];      
   };
 
   struct Branch
   {
-    Rect m_rect;                                  ///< Bounds
-    Node* m_child;                                ///< Child node
-    int m_data;                              ///< Data Id
+    Rect m_rect;                  
+    Node* m_child;                
+    int m_data;                   
   };
 
-  /// Node for each branch level
   struct Node
   {
-    bool IsInternalNode()                         { return (m_level > 0); } // Not a leaf, but a internal node
-    bool IsLeaf()                                 { return (m_level == 0); } // A leaf, contains data
+    bool IsInternalNode(){ return (m_level > 0); }
+    bool IsLeaf(){ return (m_level == 0); }
 
-    int m_count;                                  ///< Count
-    int m_level;                                  ///< Leaf is zero, others positive
-    Branch m_branch[MAXNODES];                    ///< Branch
+    int m_count;                    
+    int m_level;                    
+    Branch m_branch[MAXNODES];      
   };
 
-  /// A link list of nodes for reinsertion after a delete operation
   struct ListNode
   {
-    ListNode* m_next;                             ///< Next in list
-    Node* m_node;                                 ///< Node
+    ListNode* m_next;               
+    Node* m_node;                   
   };
 
   struct NearRect{
-    double m_rectDistance = 99999;                ///< Distance fron query point
-    Rect m_rect;                                  ///< Bounds
-    DATATYPE m_data;                              ///< Data Id
+    double m_rectDistance = 99999;  
+    Rect m_rect;   
+    DATATYPE m_data; 
   };
    struct BranchDist{
-    int m_index; ///< Position in the node
-    double m_branchDistance; ///< Distance from the query point
-    Branch m_branch; ///< Entry
+    int m_index; 
+    double m_branchDistance; 
+    Branch m_branch; 
   };
 
-  /// Variables for finding a split partition
   struct PartitionVars
   {
-    enum { NOT_TAKEN = -1 }; // indicates that position
+    enum { NOT_TAKEN = -1 }; 
 
     int m_partition[MAXNODES+1];
     int m_total;
@@ -371,8 +352,8 @@ protected:
   void SortBranchDistList(BranchDist a_branchDistList[], int a_length);
   void AddNearNeighbor(NearRect a_nearRects[], NearRect& a_nearRect, int &k);
 
-  Node* m_root;                                    ///< Root of tree
-  ELEMTYPEREAL m_unitSphereVolume;                 ///< Unit sphere constant for required number of dimensions
+  Node* m_root;                                  
+  ELEMTYPEREAL m_unitSphereVolume;               
 };
 
 RTREE_TEMPLATE
@@ -381,15 +362,14 @@ RTREE_QUAL::RTree()
   ASSERT(MAXNODES > MINNODES);
   ASSERT(MINNODES > 0);
 
-  // Precomputed volumes of the unit spheres for the first few dimensions
   const float UNIT_SPHERE_VOLUMES[] = {
-    0.000000f, 2.000000f, 3.141593f, // Dimension  0,1,2
-    4.188790f, 4.934802f, 5.263789f, // Dimension  3,4,5
-    5.167713f, 4.724766f, 4.058712f, // Dimension  6,7,8
-    3.298509f, 2.550164f, 1.884104f, // Dimension  9,10,11
-    1.335263f, 0.910629f, 0.599265f, // Dimension  12,13,14
-    0.381443f, 0.235331f, 0.140981f, // Dimension  15,16,17
-    0.082146f, 0.046622f, 0.025807f, // Dimension  18,19,20
+    0.000000f, 2.000000f, 3.141593f, 
+    4.188790f, 4.934802f, 5.263789f, 
+    5.167713f, 4.724766f, 4.058712f, 
+    3.298509f, 2.550164f, 1.884104f, 
+    1.335263f, 0.910629f, 0.599265f, 
+    0.381443f, 0.235331f, 0.140981f, 
+    0.082146f, 0.046622f, 0.025807f, 
   };
 
   m_root = AllocNode();
@@ -452,7 +432,7 @@ void RTREE_QUAL::read_MBR_tree(Node *p_node){
       data_tree[0].limits[2*axis]=p_node->m_branch[0].m_rect.m_min[axis];
       data_tree[0].limits[2*axis+1]=p_node->m_branch[0].m_rect.m_max[axis];
     }
-    for(int index=1; index < p_node->m_count; index++)///////////////////////////////////////////////
+    for(int index=1; index < p_node->m_count; index++)
     {
       for(int axis=0; axis<NUMDIMS; ++axis)
       {
@@ -469,7 +449,7 @@ void RTREE_QUAL::read_MBR_tree(Node *p_node){
   else{
     if (p_node->m_level > 0) {
 
-      for(int index=0; index < p_node->m_count; index++)///////////////////////////////////////////////
+      for(int index=0; index < p_node->m_count; index++)
       {
         //cout<<"Acceso a nivel: "<<p_node->m_level<<", NE: "<<p_node->m_count<<endl;
         //cout<<"--------------------------------"<<endl;
@@ -677,12 +657,9 @@ RTREE_TEMPLATE
 void RTREE_QUAL::Reset()
 {
 #ifdef RTREE_DONT_USE_MEMPOOLS
-  // Delete all existing nodes
   RemoveAllRec(m_root);
-#else // RTREE_DONT_USE_MEMPOOLS
-  // Just reset memory pools.  We are not using complex types
-  // EXAMPLE
-#endif // RTREE_DONT_USE_MEMPOOLS
+#else 
+#endif 
 }
 
 
@@ -729,9 +706,6 @@ void RTREE_QUAL::FreeNode(Node* a_node)
 #endif // RTREE_DONT_USE_MEMPOOLS
 }
 
-
-// Allocate space for a node in the list used in DeletRect to
-// store Nodes that are too empty.
 RTREE_TEMPLATE
 typename RTREE_QUAL::ListNode* RTREE_QUAL::AllocListNode()
 {
@@ -772,75 +746,45 @@ void RTREE_QUAL::InitRect(Rect* a_rect)
   }
 }
 
-
-// Inserts a new data rectangle into the index structure.
-// Recursively descends tree, propagates splits back up.
-// Returns 0 if node was not split.  Old node updated.
-// If node was split, returns 1 and sets the pointer pointed to by
-// new_node to point to the new node.  Old node updated to become one of two.
-// The level argument specifies the number of steps up from the leaf
-// level to insert; e.g. a data rectangle goes in at level = 0.
 RTREE_TEMPLATE
 bool RTREE_QUAL::InsertRectRec(const Branch& a_branch, Node* a_node, Node** a_newNode, int a_level)
 {
   ASSERT(a_node && a_newNode);
   ASSERT(a_level >= 0 && a_level <= a_node->m_level);
-
-  // recurse until we reach the correct level for the new record. data records
-  // will always be called with a_level == 0 (leaf)
   if(a_node->m_level > a_level)
   {
-    // Still above level for insertion, go down tree recursively
     Node* otherNode;
 
-    // find the optimal branch for this record
     int index = PickBranch(&a_branch.m_rect, a_node);
 
-    // recursively insert this record into the picked branch
     bool childWasSplit = InsertRectRec(a_branch, a_node->m_branch[index].m_child, &otherNode, a_level);
 
     if (!childWasSplit)
     {
-      // Child was not split. Merge the bounding box of the new record with the
-      // existing bounding box
       a_node->m_branch[index].m_rect = CombineRect(&a_branch.m_rect, &(a_node->m_branch[index].m_rect));
       return false;
     }
     else
     {
-      // Child was split. The old branches are now re-partitioned to two nodes
-      // so we have to re-calculate the bounding boxes of each node
       a_node->m_branch[index].m_rect = NodeCover(a_node->m_branch[index].m_child);
       Branch branch;
       branch.m_child = otherNode;
       branch.m_rect = NodeCover(otherNode);
 
-      // The old node is already a child of a_node. Now add the newly-created
-      // node to a_node as well. a_node might be split because of that.
       return AddBranch(&branch, a_node, a_newNode);
     }
   }
   else if(a_node->m_level == a_level)
   {
-    // We have reached level for insertion. Add rect, split if necessary
     return AddBranch(&a_branch, a_node, a_newNode);
   }
   else
   {
-    // Should never occur
     ASSERT(0);
     return false;
   }
 }
 
-
-// Insert a data rectangle into an index structure.
-// InsertRect provides for splitting the root;
-// returns 1 if root was split, 0 if it was not.
-// The level argument specifies the number of steps up from the leaf
-// level to insert; e.g. a data rectangle goes in at level = 0.
-// InsertRect2 does the recursion.
-//
 RTREE_TEMPLATE
 bool RTREE_QUAL::InsertRect(const Branch& a_branch, Node** a_root, int a_level)
 {
@@ -857,23 +801,19 @@ bool RTREE_QUAL::InsertRect(const Branch& a_branch, Node** a_root, int a_level)
 
   if(InsertRectRec(a_branch, *a_root, &newNode, a_level))  // Root split
   {
-    // Grow tree taller and new root
     Node* newRoot = AllocNode();
     newRoot->m_level = (*a_root)->m_level + 1;
 
     Branch branch;
 
-    // add old root node as a child of the new root
     branch.m_rect = NodeCover(*a_root);
     branch.m_child = *a_root;
     AddBranch(&branch, newRoot, NULL);
 
-    // add the split node as a child of the new root
     branch.m_rect = NodeCover(newNode);
     branch.m_child = newNode;
     AddBranch(&branch, newRoot, NULL);
 
-    // set the new root as the root node
     *a_root = newRoot;
 
     return true;
@@ -882,8 +822,6 @@ bool RTREE_QUAL::InsertRect(const Branch& a_branch, Node** a_root, int a_level)
   return false;
 }
 
-
-// Find the smallest rectangle that includes all rectangles in branches of a node.
 RTREE_TEMPLATE
 typename RTREE_QUAL::Rect RTREE_QUAL::NodeCover(Node* a_node)
 {
@@ -898,11 +836,6 @@ typename RTREE_QUAL::Rect RTREE_QUAL::NodeCover(Node* a_node)
   return rect;
 }
 
-
-// Add a branch to a node.  Split the node if necessary.
-// Returns 0 if node not split.  Old node updated.
-// Returns 1 if node split, sets *new_node to address of new node.
-// Old node updated, becomes one of two.
 RTREE_TEMPLATE
 bool RTREE_QUAL::AddBranch(const Branch* a_branch, Node* a_node, Node** a_newNode)
 {
@@ -926,26 +859,17 @@ bool RTREE_QUAL::AddBranch(const Branch* a_branch, Node* a_node, Node** a_newNod
 }
 
 
-// Disconnect a dependent node.
-// Caller must return (or stop using iteration index) after this as count has changed
 RTREE_TEMPLATE
 void RTREE_QUAL::DisconnectBranch(Node* a_node, int a_index)
 {
   ASSERT(a_node && (a_index >= 0) && (a_index < MAXNODES));
   ASSERT(a_node->m_count > 0);
 
-  // Remove element by swapping with the last element to prevent gaps in array
   a_node->m_branch[a_index] = a_node->m_branch[a_node->m_count - 1];
 
   --a_node->m_count;
 }
 
-
-// Pick a branch.  Pick the one that will need the smallest increase
-// in area to accomodate the new rectangle.  This will result in the
-// least total area for the covering rectangles in the current node.
-// In case of a tie, pick the one which was smaller before, to get
-// the best resolution when searching.
 RTREE_TEMPLATE
 int RTREE_QUAL::PickBranch(const Rect* a_rect, Node* a_node)
 {
@@ -982,8 +906,6 @@ int RTREE_QUAL::PickBranch(const Rect* a_rect, Node* a_node)
   return best;
 }
 
-
-// Combine two rectangles into larger one containing both
 RTREE_TEMPLATE
 typename RTREE_QUAL::Rect RTREE_QUAL::CombineRect(const Rect* a_rectA, const Rect* a_rectB)
 {
@@ -1000,33 +922,21 @@ typename RTREE_QUAL::Rect RTREE_QUAL::CombineRect(const Rect* a_rectA, const Rec
   return newRect;
 }
 
-
-
-// Split a node.
-// Divides the nodes branches and the extra one between two nodes.
-// Old node is one of the new ones, and one really new one is created.
-// Tries more than one method for choosing a partition, uses best result.
 RTREE_TEMPLATE
 void RTREE_QUAL::SplitNode(Node* a_node, const Branch* a_branch, Node** a_newNode)
 {
   ASSERT(a_node);
   ASSERT(a_branch);
 
-  // Could just use local here, but member or external is faster since it is reused
   PartitionVars localVars;
   PartitionVars* parVars = &localVars;
 
-  // Load all the branches into a buffer, initialize old node
   GetBranches(a_node, a_branch, parVars);
-
-  // Find partition
   ChoosePartition(parVars, MINNODES);
 
-  // Create a new node to hold (about) half of the branches
   *a_newNode = AllocNode();
   (*a_newNode)->m_level = a_node->m_level;
 
-  // Put branches from buffer into 2 nodes according to the chosen partition
   a_node->m_count = 0;
   LoadNodes(a_node, *a_newNode, parVars);
 
@@ -1034,7 +944,6 @@ void RTREE_QUAL::SplitNode(Node* a_node, const Branch* a_branch, Node** a_newNod
 }
 
 
-// Calculate the n-dimensional volume of a rectangle
 RTREE_TEMPLATE
 ELEMTYPEREAL RTREE_QUAL::RectVolume(Rect* a_rect)
 {
@@ -1053,7 +962,6 @@ ELEMTYPEREAL RTREE_QUAL::RectVolume(Rect* a_rect)
 }
 
 
-// The exact volume of the bounding sphere for the given Rect
 RTREE_TEMPLATE
 ELEMTYPEREAL RTREE_QUAL::RectSphericalVolume(Rect* a_rect)
 {
@@ -1070,7 +978,6 @@ ELEMTYPEREAL RTREE_QUAL::RectSphericalVolume(Rect* a_rect)
 
   radius = (ELEMTYPEREAL)sqrt(sumOfSquares);
 
-  // Pow maybe slow, so test for common dims like 2,3 and just use x*x, x*x*x.
   if(NUMDIMS == 3)
   {
     return (radius * radius * radius * m_unitSphereVolume);
@@ -1086,7 +993,6 @@ ELEMTYPEREAL RTREE_QUAL::RectSphericalVolume(Rect* a_rect)
 }
 
 
-// Use one of the methods to calculate retangle volume
 RTREE_TEMPLATE
 ELEMTYPEREAL RTREE_QUAL::CalcRectVolume(Rect* a_rect)
 {
@@ -1098,7 +1004,6 @@ ELEMTYPEREAL RTREE_QUAL::CalcRectVolume(Rect* a_rect)
 }
 
 
-// Load branch buffer with branches from full node plus the extra branch.
 RTREE_TEMPLATE
 void RTREE_QUAL::GetBranches(Node* a_node, const Branch* a_branch, PartitionVars* a_parVars)
 {
@@ -1124,18 +1029,6 @@ void RTREE_QUAL::GetBranches(Node* a_node, const Branch* a_branch, PartitionVars
   a_parVars->m_coverSplitArea = CalcRectVolume(&a_parVars->m_coverSplit);
 }
 
-
-// Method #0 for choosing a partition:
-// As the seeds for the two groups, pick the two rects that would waste the
-// most area if covered by a single rectangle, i.e. evidently the worst pair
-// to have in the same group.
-// Of the remaining, one at a time is chosen to be put in one of the two groups.
-// The one chosen is the one with the greatest difference in area expansion
-// depending on which group - the rect most strongly attracted to one group
-// and repelled from the other.
-// If one group gets too full (more would force other group to violate min
-// fill requirement) then other group gets the rest.
-// These last are the ones that can go in either group most easily.
 RTREE_TEMPLATE
 void RTREE_QUAL::ChoosePartition(PartitionVars* a_parVars, int a_minFill)
 {
@@ -1213,8 +1106,6 @@ void RTREE_QUAL::ChoosePartition(PartitionVars* a_parVars, int a_minFill)
         (a_parVars->m_count[1] >= a_parVars->m_minFill));
 }
 
-
-// Copy branches from the buffer into two nodes according to the partition.
 RTREE_TEMPLATE
 void RTREE_QUAL::LoadNodes(Node* a_nodeA, Node* a_nodeB, PartitionVars* a_parVars)
 {
@@ -1229,14 +1120,11 @@ void RTREE_QUAL::LoadNodes(Node* a_nodeA, Node* a_nodeB, PartitionVars* a_parVar
     int targetNodeIndex = a_parVars->m_partition[index];
     Node* targetNodes[] = {a_nodeA, a_nodeB};
 
-    // It is assured that AddBranch here will not cause a node split.
     bool nodeWasSplit = AddBranch(&a_parVars->m_branchBuf[index], targetNodes[targetNodeIndex], NULL);
     ASSERT(!nodeWasSplit);
   }
 }
 
-
-// Initialize a PartitionVars structure.
 RTREE_TEMPLATE
 void RTREE_QUAL::InitParVars(PartitionVars* a_parVars, int a_maxRects, int a_minFill)
 {
@@ -1285,8 +1173,6 @@ void RTREE_QUAL::PickSeeds(PartitionVars* a_parVars)
   Classify(seed1, 1, a_parVars);
 }
 
-
-// Put a branch in one of the groups.
 RTREE_TEMPLATE
 void RTREE_QUAL::Classify(int a_index, int a_group, PartitionVars* a_parVars)
 {
@@ -1295,7 +1181,6 @@ void RTREE_QUAL::Classify(int a_index, int a_group, PartitionVars* a_parVars)
 
   a_parVars->m_partition[a_index] = a_group;
 
-  // Calculate combined rect
   if (a_parVars->m_count[a_group] == 0)
   {
     a_parVars->m_cover[a_group] = a_parVars->m_branchBuf[a_index].m_rect;
@@ -1305,17 +1190,11 @@ void RTREE_QUAL::Classify(int a_index, int a_group, PartitionVars* a_parVars)
     a_parVars->m_cover[a_group] = CombineRect(&a_parVars->m_branchBuf[a_index].m_rect, &a_parVars->m_cover[a_group]);
   }
 
-  // Calculate volume of combined rect
   a_parVars->m_area[a_group] = CalcRectVolume(&a_parVars->m_cover[a_group]);
 
   ++a_parVars->m_count[a_group];
 }
 
-
-// Delete a data rectangle from an index structure.
-// Pass in a pointer to a Rect, the tid of the record, ptr to ptr to root node.
-// Returns 1 if record not found, 0 if success.
-// RemoveRect provides for eliminating the root.
 RTREE_TEMPLATE
 bool RTREE_QUAL::RemoveRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root)
 {
@@ -1326,8 +1205,6 @@ bool RTREE_QUAL::RemoveRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root)
 
   if(!RemoveRectRec(a_rect, a_id, *a_root, &reInsertList))
   {
-    // Found and deleted a data item
-    // Reinsert any branches from eliminated nodes
     while(reInsertList)
     {
       Node* tempNode = reInsertList->m_node;
@@ -1346,9 +1223,6 @@ bool RTREE_QUAL::RemoveRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root)
       FreeNode(remLNode->m_node);
       FreeListNode(remLNode);
     }
-
-    // Check for redundant root (not leaf, 1 child) and eliminate TODO replace
-    // if with while? In case there is a whole branch of redundant roots...
     if((*a_root)->m_count == 1 && (*a_root)->IsInternalNode())
     {
       Node* tempNode = (*a_root)->m_branch[0].m_child;
@@ -1365,11 +1239,6 @@ bool RTREE_QUAL::RemoveRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root)
   }
 }
 
-
-// Delete a rectangle from non-root part of an index structure.
-// Called by RemoveRect.  Descends tree recursively,
-// merges branches on the way back up.
-// Returns 1 if record not found, 0 if success.
 RTREE_TEMPLATE
 bool RTREE_QUAL::RemoveRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node, ListNode** a_listNode)
 {
@@ -1386,12 +1255,10 @@ bool RTREE_QUAL::RemoveRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node,
         {
           if(a_node->m_branch[index].m_child->m_count >= MINNODES)
           {
-            // child removed, just resize parent rect
             a_node->m_branch[index].m_rect = NodeCover(a_node->m_branch[index].m_child);
           }
           else
           {
-            // child removed, not enough entries in node, eliminate node
             ReInsert(a_node->m_branch[index].m_child, a_listNode);
             DisconnectBranch(a_node, index); // Must return after this call as count has changed
           }
@@ -1416,7 +1283,6 @@ bool RTREE_QUAL::RemoveRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node,
 }
 
 
-// Decide whether two rectangles overlap.
 RTREE_TEMPLATE
 bool RTREE_QUAL::Overlap(Rect* a_rectA, Rect* a_rectB) const
 {
@@ -1486,8 +1352,6 @@ bool RTREE_QUAL::Cover(Rect* a_rectA, Branch* a_branch) const
   return aux;
 }
 
-// Add a node to the reinsertion list.  All its branches will later
-// be reinserted into the index structure.
 RTREE_TEMPLATE
 void RTREE_QUAL::ReInsert(Node* a_node, ListNode** a_listNode)
 {
@@ -1500,7 +1364,6 @@ void RTREE_QUAL::ReInsert(Node* a_node, ListNode** a_listNode)
 }
 
 
-// Search in an index tree or subtree for all data retangles that overlap the argument rectangle.
 RTREE_TEMPLATE
 bool RTREE_QUAL::Search_1(Node* a_node, Rect* a_rect, int& a_foundCount, std::function<bool (const DATATYPE&)> callback) const
 {
@@ -1510,14 +1373,12 @@ bool RTREE_QUAL::Search_1(Node* a_node, Rect* a_rect, int& a_foundCount, std::fu
 
   if(a_node->IsInternalNode())
   {
-    // This is an internal node in the tree
     for(int index=0; index < a_node->m_count; ++index)
     {
       if(Overlap(a_rect, &a_node->m_branch[index].m_rect))
       {
         if(!Search(a_node->m_branch[index].m_child, a_rect, a_foundCount, callback))
         {
-          // The callback indicated to stop searching
           return false;
         }
       }
@@ -1525,7 +1386,6 @@ bool RTREE_QUAL::Search_1(Node* a_node, Rect* a_rect, int& a_foundCount, std::fu
   }
   else
   {
-    // This is a leaf node
     for(int index=0; index < a_node->m_count; ++index)
     {
       if(Cover(a_rect, &a_node->m_branch[index].m_rect))
@@ -1552,14 +1412,12 @@ bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::func
 
   if(a_node->IsInternalNode())
   {
-    // This is an internal node in the tree
     for(int index=0; index < a_node->m_count; ++index)
     {
       if(Overlap(a_rect, &a_node->m_branch[index].m_rect))
       {
         if(!Search(a_node->m_branch[index].m_child, a_rect, a_foundCount, callback))
         {
-          // The callback indicated to stop searching
           return false;
         }
       }
@@ -1602,7 +1460,6 @@ void RTREE_QUAL::Search_nn(const ELEMTYPE* a_point, Node* a_node, NearRect* a_ne
   double distance;
   if(a_node->IsInternalNode())  // not a leaf node
   {
-    // Generate a list of BrachDistance with current node entries
     BranchDist branchDistList[a_node->m_count];
     for(int index = 0; index < a_node->m_count; ++index)
     {
@@ -1621,7 +1478,6 @@ void RTREE_QUAL::Search_nn(const ELEMTYPE* a_point, Node* a_node, NearRect* a_ne
   }
   else // A leaf node
   {
-    //For each entry compute distance
     for(int index = 0; index < a_node->m_count; ++index)
     {
       distance = ComputeDistance(a_point, &a_node->m_branch[index].m_rect);

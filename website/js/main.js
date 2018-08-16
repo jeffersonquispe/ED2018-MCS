@@ -274,7 +274,7 @@ function dibujarMBR(regiones){
        strokeWidth: 2,
        strokeDashArray: [10, 5],
        stroke: color
-     }));
+    }));
 
     var text = new fabric.Text(regiones[i].tag, {
       fontSize: 15,

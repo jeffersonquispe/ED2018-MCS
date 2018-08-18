@@ -142,7 +142,14 @@ Then, go to `$HOME/go/src` and clone the project:
 
     git clone https://github.com/jeffersonquispe/ED2018-MCS.git
 
-Once installed components, just run in ED2018-MCS/website:
+Once installed components, just run in `ED2018-MCS/website`:
 
     go build main.go
     sudo ./main &
+
+## R-Tree program
+
+Once installed all above, run the cpp program in `ED2018-MCS/code`:
+
+    g++ -std=c++11 main.cpp -lpaho-mqttpp3 -o main
+    ./main

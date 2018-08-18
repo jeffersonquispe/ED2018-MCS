@@ -86,3 +86,63 @@ Once installed components, just run in `ED2018-MCS/website`:
     sudo ./main &
 
 For more information about installation, press [here](http://jenazads.com/frameworks/Create-a-REST-service-using-Go-Language-and-BeeGo-Framework).
+
+# Installing on MAC
+
+First we need to install in this order:
+
+## Moquitto
+
+Just run on your terminal:
+
+    sudo brew install mosquitto
+
+Next, set up the link to start service:
+
+    ln -sfv /usr/local/opt/mosquitto/*.plist ~/Library/LaunchAgents
+    launchctl load ~/Library/LaunchAgents/homebrew.mxcl.mosquitto.plist
+Then add on `/usr/local/etc/mosquitto/mosquitto.conf`:
+
+    listener 1883
+    protocol mqtt
+    listener 1884
+    protocol websockets
+
+Then, restart the service:
+
+    /usr/local/sbin/mosquitto -c /usr/local/etc/mosquitto/mosquitto.conf &
+
+## CPP paho client
+
+Execute theses lines on terminal:
+
+    git clone https://github.com/eclipse/paho.mqtt.cpp.git
+    cd paho.mqtt.cpp
+    mkdir build
+    cd build
+    ccmake -DPAHO_BUILD_DOCUMENTATION=FALSE -DPAHO_BUILD_STATIC=TRUE -DPAHO_BUILD_SAMPLES=TRUE -DPAHO_MQTT_C_PATH=../../paho.mqtt.cpp
+    cd ..
+    sudo bash install_paho_mqtt_c.sh
+    exit 0
+
+see more info [here](https://github.com/eclipse/paho.mqtt.cpp)
+
+## Golang
+
+To install go latest:  
+go to [golang page](https://golang.org/dl/) and choose the option for MAC.  
+Download .pkg option and install it, restart you terminal session.
+
+The create your `$HOME/go` directory and then install components:
+
+    go get github.com/gorilla/mux
+    go get github.com/jenazads/logs
+
+Then, go to `$HOME/go/src` and clone the project:
+
+    git clone https://github.com/jeffersonquispe/ED2018-MCS.git
+
+Once installed components, just run in ED2018-MCS/website:
+
+    go build main.go
+    sudo ./main &

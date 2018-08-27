@@ -10,10 +10,6 @@
     <script type="text/javascript" src="dependencies/materialize.min.js"></script>
     <script type="text/javascript" src="dependencies/fabric.min.js"></script>
     <script type="text/javascript" src="dependencies/mqttws31.js"></script>
-    <script type="text/javascript" src="js/main.js"></script>
-    <script type="text/javascript" src="js/polygon.js"></script>
-    <script type="text/javascript" src="js/point.js"></script>
-    <script type="text/javascript" src="js/mqtt.js"></script>
   </head>
  <style type="text/css">
  
@@ -87,7 +83,11 @@
       <canvas id="c" style="border: 3px solid black; width:100%;height:100%"></canvas>
     </div>
   </body>
+  <script type="text/javascript" src="js/main.js"></script>
+  <script type="text/javascript" src="js/polygon.js"></script>
+  <script type="text/javascript" src="js/point.js"></script>
+  <script type="text/javascript" src="js/mqtt.js"></script>
   <script>
-//     mqttPublish(local_clientMQTTPaho, "web/reset", "reset")
+     mqttPublish(local_clientMQTTPaho, "web/reset", "reset")
   </script>
 </html>

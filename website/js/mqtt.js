@@ -15,6 +15,7 @@ function onSuccessConnect(){
   } else if (brokerInfo == "WSS"){
     console.log("New WSS Client on MQTT Web Socket Service ...");
   }
+  sendReset()
 }
 
 function onFailureConnect(message){
@@ -80,7 +81,11 @@ function Reset(){
   location.href='/';
   mqttPublish(local_clientMQTTPaho, "web/reset", "reset")
 }
- 
+
+function sendReset(){
+  mqttPublish(local_clientMQTTPaho, "web/reset", "reset")
+}
+
 var mqttclient = NewWebAppClient(brokerInfo.clientIdFree, "", "cpp/#");
 var mqttoptions = mqttclient[1];
 var local_clientMQTTPaho = mqttclient[0];

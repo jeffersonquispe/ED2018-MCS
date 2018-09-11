@@ -46,7 +46,7 @@ prototypefabric.point = {
         pointArray.push(circle);
         canvas.add(circle);
         polyToRender[polCount] = circle
-        pointMode = false;
+        //pointMode = false;
        // alert("hola desde addpoint 2");
     },
 
